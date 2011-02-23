@@ -1,0 +1,333 @@
+/*
+ *  Copyright 2010 jahziah.
+ * 
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ * 
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *  under the License.
+ */
+package net.cheesecan.cheeselobby.ui;
+
+import net.cheesecan.cheeselobby.ui.LoginFrame;
+import net.cheesecan.cheeselobby.ui.BattleListFrame;
+import net.cheesecan.cheeselobby.ui.BattleRoomFrame;
+import net.cheesecan.cheeselobby.ui.ChatFrame;
+import java.awt.Desktop;
+import java.awt.MouseInfo;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JDesktopPane;
+import javax.swing.JFrame;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+import javax.swing.WindowConstants;
+import net.cheesecan.cheeselobby.SessionController;
+import net.cheesecan.cheeselobby.io.SettingsFile;
+import net.cheesecan.cheeselobby.ui.components.LobbyIcons;
+import net.cheesecan.cheeselobby.unitsync.UnitSyncForJava;
+import org.pushingpixels.substance.api.SubstanceLookAndFeel;
+
+/**
+ *
+ * @author jahziah
+ */
+public class NewMainFrame extends JFrame {
+
+    // Shared
+    public static LobbyIcons lobbyIcons = new LobbyIcons();
+    // Members
+    private JDesktopPane bg;
+    public final String lobbyName = "CheeseLobby";
+    public final float lobbyVersion = (float) 0.1;
+    private String title;
+    private JPopupMenu popupMenu;
+    private JMenuItem settingsMenu;
+    private JMenuItem helpMenu;
+    private JMenuItem aboutMenu;
+    private JMenuItem exitMenu;
+    // Objects
+    private SettingsFile settings;
+    private SessionController sessionController;
+    private UnitSyncForJava unitSync;
+    // GUI panels
+    private LoginFrame login;
+    private ChatFrame chat;
+    private BattleListFrame battle;
+    private BattleRoomFrame battleRoom;
+    private SettingsDialog settingsDialog;
+
+    public static void main(String[] args) {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                new NewMainFrame();
+            }
+        });
+    }
+
+    public NewMainFrame() {
+        // Initialize settings
+        settings = new SettingsFile();
+
+        // Initialize the GUI theme
+        initializeTheme();
+
+        // Setup GUI components
+        createAndShowGUI();
+
+        // Init unitsync
+        readSettingsFile();
+
+        // Initialize and start sessionController thread
+        sessionController = new SessionController(settings);
+        sessionController.start();
+
+        // Init login window
+        initLoginWindow();
+
+        // Make visible
+        setVisible(true);
+    }
+
+    /**
+     * Sets a substance skin.
+     */
+    private void initializeTheme() {
+        if (settings.getTheme() == null) {   // default skin
+            SubstanceLookAndFeel.setSkin("org.pushingpixels.substance.api.skin.GraphiteGlassSkin");
+        } else {
+            SubstanceLookAndFeel.setSkin("org.pushingpixels.substance.api.skin." + settings.getTheme());
+        }
+    }
+
+    private void readSettingsFile() {
+        // Are required settings missing?
+        if (settings.getUnitSyncPath().isEmpty() || settings.getSpringExePath().isEmpty() || settings.getSpringDataDirectory().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Welcome to CheeseLobby!\nThere are a few options that need to be set before you can begin playing.", lobbyName + " " + lobbyVersion, JOptionPane.INFORMATION_MESSAGE);
+
+            // Note if user tries to exit
+            /*
+            settingsDialog.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                System.exit(0);
+            }
+            });
+             * 
+             */
+
+            settingsDialog.showAtCenterOfScreen();
+        }
+        // Load unitsync
+        Runtime.getRuntime().load(settings.getUnitSyncPath());
+        unitSync = new UnitSyncForJava();
+    }
+
+    /**
+     * Initializes the popup menu which appears when a user right-clicks on the background.
+     */
+    private void initPopupMenu() {
+        final JPopupMenu menu = new JPopupMenu();
+        settingsMenu = new JMenuItem("Settings");
+        helpMenu = new JMenuItem("Help");
+        aboutMenu = new JMenuItem("About");
+        exitMenu = new JMenuItem("Exit");
+        menu.add(settingsMenu);
+        menu.addSeparator();
+        menu.add(helpMenu);
+        menu.add(aboutMenu);
+        menu.add(exitMenu);
+        //menu.setInvoker(bg);
+
+        addMouseListener(new MouseListener() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    showPopup(e);
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    showPopup(e);
+                }
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                //throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                //throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            private void showPopup(MouseEvent e) {
+                menu.show(e.getComponent(), e.getX(), e.getY());
+            }
+        });
+
+        final NewMainFrame thisPtr = this;
+        ActionListener menuListener = new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource() == settingsMenu) {
+                    settingsDialog.showAtCenterOfScreen();
+                } else if (e.getSource() == helpMenu) {
+                    try {
+                        try {
+                            Desktop.getDesktop().browse(new URI("http://jahwag.github.com/cheeselobby/project-info.html"));
+                        } catch (IOException ex) {
+                            Logger.getLogger(NewMainFrame.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    } catch (URISyntaxException ex) {
+                        Logger.getLogger(NewMainFrame.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                } else if (e.getSource() == aboutMenu) {
+                    JOptionPane.showMessageDialog(thisPtr, title + "\n" + "A Java multiplayer lobby client for Spring.\n" + "Developed by Jahziah Wagner 2011.");
+                } else if (e.getSource() == exitMenu) {
+                    int retVal = JOptionPane.showConfirmDialog(thisPtr, "Are you sure you wish to exit?", "Confirm", JOptionPane.YES_NO_OPTION);
+                    if (retVal == JOptionPane.YES_OPTION) {
+                        System.exit(0);
+                    }
+                }
+            }
+        };
+
+        settingsMenu.addActionListener(menuListener);
+        helpMenu.addActionListener(menuListener);
+        aboutMenu.addActionListener(menuListener);
+        exitMenu.addActionListener(menuListener);
+    }
+
+    /**
+     * Constructs GUI then displays it.
+     */
+    public final void createAndShowGUI() {
+        // Initialize settings dialog
+        settingsDialog = new SettingsDialog(null, settings);
+
+        // Initialize popup menu
+        initPopupMenu();
+
+        // Initialize members
+        bg = new JDesktopPane();
+
+        // Set decoration type of bg
+        removeNotify();
+        setUndecorated(true);
+        addNotify();
+
+        // Set title
+        title = lobbyName + " " + lobbyVersion;
+        setTitle(title);
+
+        // Set members' properties
+        bg.setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
+        setExtendedState(getExtendedState() | JFrame.MAXIMIZED_BOTH);
+
+        // Add action listeners
+
+        // Add members
+        add(bg);
+
+        // Set what we do on close
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
+        addWindowListener(new WindowAdapter() {
+
+            @Override
+            public void windowClosing(WindowEvent e) {
+                System.out.println("Closing");
+                destroy();
+            }
+        });
+
+
+        pack();
+
+    }
+
+    private void initLoginWindow() {
+        // Initialize login panel
+        login = new LoginFrame(sessionController, this, settings);
+
+        bg.add(login);
+        login.setVisible(true);
+    }
+
+    /**
+     * Called by the login panel on event dispatch thread, to notify us that it's done.
+     */
+    public void loginFinished() {
+        // Start chat frame
+        chat = new ChatFrame(sessionController, settings);
+
+        // Add chat frame to desktop pane
+        bg.add(chat);
+
+        // Start battle list frame
+        battle = new BattleListFrame(sessionController, this, unitSync);
+
+        // Add battle room frame
+        bg.add(battle);
+
+        // Minimize battle
+        /*
+        try {
+            // Iconify battle
+            battle.setIcon(false);
+        } catch (PropertyVetoException ex) {
+            Logger.getLogger(NewMainFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+         * 
+         */
+
+        // Initialize battleRoom
+        battleRoom = new BattleRoomFrame(sessionController, settings, unitSync);
+
+        bg.add(battleRoom);
+
+        // Notify sessionController we are now ready
+        sessionController.guiIsReady();
+
+        // Tell GUI to log us into the channels in our perform list
+        String[] performList = settings.getAutoJoinChannels().split("\n");
+        for (String channel : performList) {
+            sessionController.joinChannel(channel);
+        }
+    }
+
+    public void destroy() {
+        //settings.destroy();
+    }
+}

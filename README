@@ -1,0 +1,7 @@
+. . . . . .CheeseLobby. . . . . .
+This project is maintained using Maven2 and is licensed with Apache License V 2.0.
+
+https://github.com/jahwag/cheeselobby
+
+. . . . . .Building. . . . . . . 
+To build the project, you must first install the required libraries found in /lib/ by executing install_lwjgl.sh and install_unitsync.sh.
