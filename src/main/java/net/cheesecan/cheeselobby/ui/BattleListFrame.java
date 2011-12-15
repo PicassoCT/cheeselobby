@@ -88,9 +88,6 @@ public class BattleListFrame extends JInternalFrame implements ActionListener, B
                 reveal();
             }
         });
-
-        // Make visible as an icon
-        setVisible(true);
     }
 
     private void initBattlesTable() {

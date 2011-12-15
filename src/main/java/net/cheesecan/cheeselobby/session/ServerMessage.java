@@ -59,6 +59,14 @@ public enum ServerMessage {
         RING,
         REMOVESTARTRECT,
         FORCEQUITBATTLE,
-        JOINFAILED
+        JOINFAILED,
+        REGISTRATIONDENIED,
+        REGISTRATIONACCEPTED,
+        AGREEMENT,
+        AGREEMENTEND,
+        ACCEPTED,
+        DENIED
+
+
 
 }

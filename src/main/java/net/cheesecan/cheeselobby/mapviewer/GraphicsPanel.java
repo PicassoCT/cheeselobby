@@ -9,7 +9,6 @@ import java.awt.Canvas;
 import java.awt.Dimension;
 import java.awt.HeadlessException;
 import java.awt.event.MouseAdapter;
-import java.awt.event.MouseListener;
 import net.cheesecan.cheeselobby.unitsync.UnitSyncForJava;
 
 /**
@@ -20,13 +19,13 @@ public class GraphicsPanel extends JPanel {
 
     public static Canvas canvas;
     private JGameEngine engine;
-    protected static String heightmapPath;
+    private final int height, width;
 
-    public GraphicsPanel() throws HeadlessException {
-        heightmapPath = getClass().getResource("/3dpreview/heightmap.bmp").getPath();
-
+    public GraphicsPanel(int width, int height) throws HeadlessException {
+        this.width = width;
+        this.height = height;
         // Set size
-        setSize(new Dimension(384, 384));
+        setSize(new Dimension(width, height));
 
         // Make visible
         //pack();
@@ -39,23 +38,24 @@ public class GraphicsPanel extends JPanel {
         add(canvas);
 
         // Configure canvas
-        canvas.setSize(384, 384);
+        canvas.setSize(width, height);
         canvas.setFocusable(true);
         canvas.setIgnoreRepaint(true);
 
-        System.out.println("Finished setting up canvas.");
+        System.out.println("Successfully attached 3D previewer canvas.");
 
         canvas.addMouseListener(new MouseAdapter() {
+
             @Override
             public void mouseEntered(MouseEvent e) {
-                if(engine != null) {
+                if (engine != null) {
                     engine.setMouseIsInsideWindow(true);
                 }
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                if(engine != null) {
+                if (engine != null) {
                     engine.setMouseIsInsideWindow(false);
                 }
             }
@@ -65,27 +65,31 @@ public class GraphicsPanel extends JPanel {
         //repaint();
     }
 
-    public JGameEngine getEngine() {
-        return engine;
+    public boolean engineIsUninitialized() {
+        return engine == null;
     }
 
     /**
      * Call this when GL window has not been initialized yet.
      */
-    public void show(final UnitSyncForJava unitSync, final int mapChecksum) {
-        // Don't show anything if mapname is a map that we don't have
-        if (!unitSync.haveMap(mapChecksum)) {
-            return;
-        }
-
+    public void init() {
+        setVisible(true);
         if (engine == null) {
             // Initialize engine
-            engine = new JGameEngine();
+            engine = new JGameEngine(width, height);
 
             // Start JGame thread
             engine.start();
         }
         // else engine is initialized already, so we just call MapPreview and tell it to remake its heightmap
+    }
+
+    public void show(final UnitSyncForJava unitSync, final int mapChecksum) {
+        // Don't show anything if mapname is a map that we don't have
+        if (!unitSync.haveMap(mapChecksum)) {
+            System.out.println("Don't have this map.");
+            return;
+        }
 
         // Give engine task to perform
         engine.giveTask(new Runnable() {
@@ -94,11 +98,52 @@ public class GraphicsPanel extends JPanel {
             public void run() {
                 try {
                     engine.getGame().initHeightMap(unitSync, mapChecksum);
+                    engine.setPaused(false);
+                    setVisible(true);
+                    canvas.setVisible(true);
+                    System.out.println("Initialized 3D preview heightmap.");
                 } catch (IOException ex) {
                     Logger.getLogger(GraphicsPanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         });
+    }
 
+    @Override
+    public void hide() {
+        super.hide();
+        engine.setPaused(true);
+        canvas.setVisible(false);
+        System.out.println("Hiding 3D preview.");
+    }
+
+    public void setMinimapActive() {
+        engine.giveTask(new Runnable() {
+
+            public void run() {
+                System.out.println("Showing minimap.");
+                engine.getGame().getMap().setActiveTexture("minimap");
+            }
+        });
+    }
+
+    public void setHeightmapActive() {
+        engine.giveTask(new Runnable() {
+
+            public void run() {
+                System.out.println("Showing heightmap.");
+                engine.getGame().getMap().setActiveTexture("heightmap");
+            }
+        });
+    }
+    
+    public void setMetalmapActive() {
+        engine.giveTask(new Runnable() {
+
+            public void run() {
+                System.out.println("Showing metalmap.");
+                engine.getGame().getMap().setActiveTexture("metalmap");
+            }
+        });
     }
 }

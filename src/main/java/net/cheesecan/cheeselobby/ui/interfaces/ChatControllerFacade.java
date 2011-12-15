@@ -67,4 +67,15 @@ public interface ChatControllerFacade {
      * @return true if the username exists, otherwise null.
      */
     public boolean isValidUsername(String username);
+
+    /**
+     * Join the same battle as the specified user.
+     */
+    public void joinSameBattleAsUser(String username);
+
+    /**
+     * Player want to rename him/herself.
+     * @param name
+     */
+    public void rename(String name);
 }

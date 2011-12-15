@@ -16,12 +16,7 @@
  */
 package net.cheesecan.cheeselobby.ui;
 
-import net.cheesecan.cheeselobby.ui.LoginFrame;
-import net.cheesecan.cheeselobby.ui.BattleListFrame;
-import net.cheesecan.cheeselobby.ui.BattleRoomFrame;
-import net.cheesecan.cheeselobby.ui.ChatFrame;
 import java.awt.Desktop;
-import java.awt.MouseInfo;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -29,7 +24,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -37,13 +31,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import net.cheesecan.cheeselobby.SessionController;
 import net.cheesecan.cheeselobby.io.SettingsFile;
 import net.cheesecan.cheeselobby.ui.components.LobbyIcons;
+import net.cheesecan.cheeselobby.ui.interfaces.Disconnectable;
 import net.cheesecan.cheeselobby.unitsync.UnitSyncForJava;
 import org.pushingpixels.substance.api.SubstanceLookAndFeel;
 
@@ -51,7 +48,7 @@ import org.pushingpixels.substance.api.SubstanceLookAndFeel;
  *
  * @author jahziah
  */
-public class NewMainFrame extends JFrame {
+public class NewMainFrame extends JFrame implements Disconnectable {
 
     // Shared
     public static LobbyIcons lobbyIcons = new LobbyIcons();
@@ -64,6 +61,7 @@ public class NewMainFrame extends JFrame {
     private JMenuItem settingsMenu;
     private JMenuItem helpMenu;
     private JMenuItem aboutMenu;
+    private JMenuItem logoutMenu;
     private JMenuItem exitMenu;
     // Objects
     private SettingsFile settings;
@@ -90,6 +88,10 @@ public class NewMainFrame extends JFrame {
         // Initialize settings
         settings = new SettingsFile();
 
+        // Initialize and start sessionController thread
+        sessionController = new SessionController(settings, (Disconnectable) this);
+        sessionController.start();
+
         // Initialize the GUI theme
         initializeTheme();
 
@@ -98,10 +100,6 @@ public class NewMainFrame extends JFrame {
 
         // Init unitsync
         readSettingsFile();
-
-        // Initialize and start sessionController thread
-        sessionController = new SessionController(settings);
-        sessionController.start();
 
         // Init login window
         initLoginWindow();
@@ -131,7 +129,7 @@ public class NewMainFrame extends JFrame {
             settingsDialog.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                System.exit(0);
+            System.exit(0);
             }
             });
              * 
@@ -152,13 +150,15 @@ public class NewMainFrame extends JFrame {
         settingsMenu = new JMenuItem("Settings");
         helpMenu = new JMenuItem("Help");
         aboutMenu = new JMenuItem("About");
+        logoutMenu = new JMenuItem("Logout");
         exitMenu = new JMenuItem("Exit");
         menu.add(settingsMenu);
         menu.addSeparator();
         menu.add(helpMenu);
-        menu.add(aboutMenu);
+        menu.add(logoutMenu);
+         menu.add(aboutMenu);
         menu.add(exitMenu);
-        //menu.setInvoker(bg);
+        logoutMenu.setVisible(false);
 
         addMouseListener(new MouseListener() {
 
@@ -219,6 +219,11 @@ public class NewMainFrame extends JFrame {
                     if (retVal == JOptionPane.YES_OPTION) {
                         System.exit(0);
                     }
+                } else if (e.getSource() == logoutMenu) {
+                    int res = JOptionPane.showConfirmDialog(null, "Are you sure you wish to disconnect?", "Disconnect", JOptionPane.YES_NO_OPTION);
+                    if (res == JOptionPane.YES_OPTION) {
+                        _disconnect(null, null, null);
+                    }
                 }
             }
         };
@@ -226,6 +231,7 @@ public class NewMainFrame extends JFrame {
         settingsMenu.addActionListener(menuListener);
         helpMenu.addActionListener(menuListener);
         aboutMenu.addActionListener(menuListener);
+        logoutMenu.addActionListener(menuListener);
         exitMenu.addActionListener(menuListener);
     }
 
@@ -255,8 +261,6 @@ public class NewMainFrame extends JFrame {
         bg.setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
         setExtendedState(getExtendedState() | JFrame.MAXIMIZED_BOTH);
 
-        // Add action listeners
-
         // Add members
         add(bg);
 
@@ -268,16 +272,16 @@ public class NewMainFrame extends JFrame {
             @Override
             public void windowClosing(WindowEvent e) {
                 System.out.println("Closing");
-                destroy();
             }
         });
 
-
         pack();
-
     }
 
     private void initLoginWindow() {
+        // Initialize other windows
+        initializeWindows();
+
         // Initialize login panel
         login = new LoginFrame(sessionController, this, settings);
 
@@ -288,34 +292,11 @@ public class NewMainFrame extends JFrame {
     /**
      * Called by the login panel on event dispatch thread, to notify us that it's done.
      */
-    public void loginFinished() {
-        // Start chat frame
-        chat = new ChatFrame(sessionController, settings);
+    protected void loginFinished() {
+        disposeOfWindow(login);
 
-        // Add chat frame to desktop pane
-        bg.add(chat);
-
-        // Start battle list frame
-        battle = new BattleListFrame(sessionController, this, unitSync);
-
-        // Add battle room frame
-        bg.add(battle);
-
-        // Minimize battle
-        /*
-        try {
-            // Iconify battle
-            battle.setIcon(false);
-        } catch (PropertyVetoException ex) {
-            Logger.getLogger(NewMainFrame.class.getName()).log(Level.SEVERE, null, ex);
-        }
-         * 
-         */
-
-        // Initialize battleRoom
-        battleRoom = new BattleRoomFrame(sessionController, settings, unitSync);
-
-        bg.add(battleRoom);
+        // Enable logout
+        logoutMenu.setVisible(true);
 
         // Notify sessionController we are now ready
         sessionController.guiIsReady();
@@ -325,9 +306,68 @@ public class NewMainFrame extends JFrame {
         for (String channel : performList) {
             sessionController.joinChannel(channel);
         }
+
+        // Make visible
+        battle.setVisible(true);
+        chat.setVisible(true);
     }
 
-    public void destroy() {
-        //settings.destroy();
+    private void initializeWindows() {
+        // Start chat frame
+        chat = new ChatFrame(sessionController, settings);
+        // Add chat frame to desktop pane
+        bg.add(chat);
+        // Start battle list frame
+        battle = new BattleListFrame(sessionController, this, unitSync);
+        // Add battle room frame
+        bg.add(battle);
+        // Initialize battleRoom
+        battleRoom = new BattleRoomFrame(sessionController, settings, unitSync);
+        bg.add(battleRoom);
+    }
+
+    private void disposeOfWindow(JInternalFrame window) {
+        // Remove from desktop
+        bg.remove(window);
+        // Hide from view
+        window.setVisible(false);
+        // Dispose, that is, deallocate all memory assigned for this frame
+        window.dispose();
+    }
+
+    @Override
+    public void disconnect(final String previousName, final String newName, final String reason) {
+      SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    _disconnect(previousName, newName, reason);
+                }
+            });
+    }
+
+    private void _disconnect(String previousName, String newName, String reason) {
+        // Dispose of GUI windows
+        disposeOfWindow(chat);
+        disposeOfWindow(battle);
+        disposeOfWindow(battleRoom);
+
+        // Repaint
+        repaint();
+
+        // Tell controller we want to _disconnect
+        sessionController.disconnect();
+
+        // Show login window 
+        initLoginWindow();
+
+        // Show popup if the user did not perform disconnect themselves
+        if(reason != null)
+        JOptionPane.showMessageDialog(this, reason, "You were disconnected", JOptionPane.INFORMATION_MESSAGE);
+
+        // Set the renamed name if this was a /rename-caused disconnect
+        if(newName != null)
+        login.changeAccountName(previousName, newName);
+
     }
 }

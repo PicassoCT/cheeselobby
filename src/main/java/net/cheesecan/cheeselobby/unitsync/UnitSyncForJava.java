@@ -170,6 +170,21 @@ public class UnitSyncForJava {
         }
     }
 
+    /**
+     * EXPERIMENTAL
+     * @return
+     */
+    public HashMap<String, Integer> getUnits() {
+        HashMap<String, Integer> units = new HashMap<String, Integer>();
+        StringBuilder sb = new StringBuilder();
+
+        int n = UnitsyncLibrary.GetUnitCount();
+        for(int j=0; j<n; j++) {
+            units.put(UnitsyncLibrary.GetUnitName(j).toString(), j);
+        }
+        return units;
+    }
+
     private String GetError() {
         String error = "";
         try {

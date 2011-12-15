@@ -1,9 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package net.cheesecan.cheeselobby.mapviewer;
 
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import net.cheesecan.cheeselobby.unitsync.UnitSyncForJava;
 import java.awt.image.ShortLookupTable;
 import java.awt.image.LookupOp;
@@ -21,39 +19,53 @@ public final class MapPreview {
     // Camera
     protected int camx;
     protected int camy;
-    protected int camrotation;
-    protected int zoom;
+    protected float camrotation;
+    protected float zoom;
     // Constants
     public final int mapWidth = 512;
     public final int mapHeight = 512;
     // Objects
     private Heightmap map;
-    private UnitSyncForJava unitSync;
+    //private UnitSyncForJava unitSync;
 
     public MapPreview() {
-        camx = mapWidth;
-        camy = mapHeight;
+        camx = mapWidth * 2/3 + 10;
+        camy = mapHeight * 2/3 - 10;
         camrotation = 0;
         zoom = 1;
     }
 
     public void initHeightMap(UnitSyncForJava unitSync, int mapChecksum) throws IOException {
-        this.unitSync = unitSync;
+//        this.unitSync = unitSync;
 
         // Get heightmap
         BufferedImage heightmap = unitSync.getInfoMap(unitSync.mapChecksumToArchiveName(mapChecksum), "height");
+        heightmap = flipHorizontally(heightmap); 
         // Resize heightmap
         heightmap = UnitSyncForJava.resize(heightmap, 256, 256, BufferedImage.TYPE_BYTE_GRAY);
         // Get minimap
         BufferedImage minimap = unitSync.getMinimap(unitSync.mapChecksumToArchiveName(mapChecksum), 0);
+        minimap = flipHorizontally(minimap); 
+        // Get metalmap
+        BufferedImage metalmap = unitSync.getInfoMap(unitSync.mapChecksumToArchiveName(mapChecksum), "metal");
+        heightmap = flipHorizontally(heightmap); 
+        
         // Create a heightmap
-        map = new Heightmap(invertImage(heightmap), heightmap, minimap);
+        map = new Heightmap(invertImage(heightmap), heightmap, minimap, metalmap);
+    }
+
+    private BufferedImage flipHorizontally(BufferedImage bufferedImage) {
+        // Flip the image horizontally
+        AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
+        tx.translate(-bufferedImage.getWidth(null), 0);
+        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+        return bufferedImage = op.filter(bufferedImage, null);
     }
 
     public Heightmap getMap() {
         return map;
     }
-    
+
     private BufferedImage invertImage(final BufferedImage src) {
         short[] invertTable;
         invertTable = new short[256];
@@ -95,7 +107,7 @@ public final class MapPreview {
      * Paint will not run before initHeightMap has been performed.
      */
     protected void paint() {
-        if(map == null) {
+        if (map == null) {
             return;
         }
 

@@ -151,8 +151,6 @@ public class ChatFrame extends JInternalFrame implements ActionListener, ChangeL
         tabbedPane.putClientProperty(SubstanceLookAndFeel.TABBED_PANE_CLOSE_CALLBACK, closedTab);
 
         setDividerLocation();
-        
-        setVisible(true);
     }
 
     private void initServerUserTable() {
@@ -163,31 +161,8 @@ public class ChatFrame extends JInternalFrame implements ActionListener, ChangeL
         // Initialize table
         userTable = new LobbyTable(serverTableModel);
 
-        // Create action listener
-        ActionListener listener = new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-                // Get row selected
-                int row = userTable.getSelectedRow();
-                int col = 1;    //   1 is username column
-
-                // Get username at that row
-                String username = userTable.getModel().getValueAt(row, col).toString();
-
-                // Open chat if this is a valid user
-                if (username != null && chatController.isValidUsername(username)) {
-                    openPrivateConversation(username);
-                }
-
-                // We are done so hide the menu
-                // userTable.hideMenu();
-            }
-        };
-
         // Initialize menu
-        initPopupMenu(listener);
+        initPopupMenu();
 
         // Add
         usersScrollPane.setViewportView(userTable);
@@ -227,12 +202,39 @@ public class ChatFrame extends JInternalFrame implements ActionListener, ChangeL
         }
     }
 
-    private void initPopupMenu(ActionListener popupMenuActionListener) {
-        menu = new JPopupMenu("Hi");
-        JMenuItem openChat = new JMenuItem("Open chat");
-        openChat.addActionListener(popupMenuActionListener);
+    private void initPopupMenu() {
+        menu = new JPopupMenu("");
+        final JMenuItem openChat = new JMenuItem("Open chat");
+        final JMenuItem joinSameBattle = new JMenuItem("Join same battle");
+
+        // Create action listener
+        ActionListener listener = new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Get row selected
+                int row = userTable.getSelectedRow();
+                int col = 1;    //   1 is username column
+                // Get username at that row
+                String username = userTable.getModel().getValueAt(row, col).toString();
+
+                if(e.getSource() == openChat) {
+                    // Open chat if this is a valid user
+                    if (username != null && chatController.isValidUsername(username)) {
+                        openPrivateConversation(username);
+                    }
+                }
+                else if(e.getSource() == joinSameBattle) {
+                    chatController.joinSameBattleAsUser(username);
+                }
+            }
+        };
+
+        openChat.addActionListener(listener);
+        joinSameBattle.addActionListener(listener);
 
         menu.add(openChat);
+        menu.add(joinSameBattle);
 
         userTable.addMouseListener(new MouseListener() {
 
@@ -356,6 +358,10 @@ public class ChatFrame extends JInternalFrame implements ActionListener, ChangeL
                 }
                 chatController.joinChannel(channelName);
             }
+            else if(text.substring(0,7).equals("/rename")) {
+                String name = text.substring(8, text.length());
+                chatController.rename(name);
+            }
         } // If we're trying to do say in the server tab, don't allow that unless it's a command
         else if (tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()).equals(settings.getServerName())) {
             return;
@@ -384,11 +390,11 @@ public class ChatFrame extends JInternalFrame implements ActionListener, ChangeL
 
     private void setColumnModel() {
         // Set flag and rank columns
-        userTable.getColumnModel().getColumn(0).setCellRenderer(new BooleanRenderer());
+        userTable.getColumnModel().getColumn(0).setCellRenderer(new IconRenderer(NewMainFrame.lobbyIcons.getPlayerStatusIcons()));
         userTable.getColumnModel().getColumn(2).setCellRenderer(new IconRenderer(NewMainFrame.lobbyIcons.getCountryIcons()));
         userTable.getColumnModel().getColumn(3).setCellRenderer(new IconRenderer(NewMainFrame.lobbyIcons.getRankIcons()));
 
-        userTable.getColumnModel().getColumn(0).setMaxWidth(25);
+        userTable.getColumnModel().getColumn(0).setMaxWidth(32);
         userTable.getColumnModel().getColumn(2).setMaxWidth(16);
         userTable.getColumnModel().getColumn(3).setMaxWidth(23);
         userTable.setRowHeight(42);
@@ -773,4 +779,5 @@ public class ChatFrame extends JInternalFrame implements ActionListener, ChangeL
             }
         });
     }
+
 }

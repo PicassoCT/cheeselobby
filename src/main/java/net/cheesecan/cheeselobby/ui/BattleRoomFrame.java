@@ -25,6 +25,7 @@ package net.cheesecan.cheeselobby.ui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.HeadlessException;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -50,10 +51,11 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.text.DefaultCaret;
-import net.cheesecan.cheeselobby.ui.interfaces.BattleControllerFacade;
 import net.cheesecan.cheeselobby.lobby_connection.interfaces.BattleObserver;
 import net.cheesecan.cheeselobby.io.SettingsFile;
 import net.cheesecan.cheeselobby.session.ChatMessageType;
@@ -87,7 +89,6 @@ public class BattleRoomFrame extends JInternalFrame implements BattleObserver, A
     private Battle battle;
     private User self;
     private long lastAutoUnspecAttempt;
-    
     /**
      * The time in ms to wait before trying to unspec again.
      */
@@ -110,8 +111,21 @@ public class BattleRoomFrame extends JInternalFrame implements BattleObserver, A
 
     private void postInitComponents() {
         // make chat autoscroll
-        DefaultCaret caret = (DefaultCaret)chatTextPane.getCaret();
+        DefaultCaret caret = (DefaultCaret) chatTextPane.getCaret();
         caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+
+        overviewTabbedPane.addChangeListener(new ChangeListener() {
+
+            public void stateChanged(ChangeEvent e) {
+                if (overviewTabbedPane.getSelectedComponent() != previewPanel) {
+                    disableMapViewer();
+                }
+            }
+        });
+    }
+
+    private void disableMapViewer() {
+        mapViewerComboBox.setSelectedItem("Off");   // triggers listener to disable viewer
     }
 
     private void setLocation() {
@@ -133,6 +147,7 @@ public class BattleRoomFrame extends JInternalFrame implements BattleObserver, A
     private void setFrameBehaviour() {
         // Set frame behaviour
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        setClosable(true);
         setIconifiable(true);
         setMaximizable(true);
         setResizable(true);
@@ -193,11 +208,10 @@ public class BattleRoomFrame extends JInternalFrame implements BattleObserver, A
 
         // Set default close operation to leave
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-
+        
         addInternalFrameListener(new InternalFrameAdapter() {
-
             @Override
-            public void internalFrameClosed(InternalFrameEvent e) {
+            public void internalFrameClosing(InternalFrameEvent e) {
                 leave();
             }
         });
@@ -228,18 +242,19 @@ public class BattleRoomFrame extends JInternalFrame implements BattleObserver, A
         //userTable.pack(TablePacker.ALL_ROWS, true);
     }
 
-    // TODO 3d viewer is broken(not that bad)
-    private void init3DPreview() {
+    private void constructInitializeAndAdd3DPreview() throws HeadlessException {
+        System.out.println(previewPanel.getWidth() + " " + previewPanel.getHeight());
 
-        // Initialize map viewer engine
-        //mapViewerPanel.show(unitSync, battle.getMapHash());
-
-        /*
         // Initialize map viewer panel
-        mapViewerPanel = new GraphicsPanel();
+        mapViewerPanel = new GraphicsPanel(368, 320);
 
         // Add
         previewPanel.add(mapViewerPanel);
+    }
+
+    // TODO 3d viewer is broken(not that bad)
+    private void init3DPreview() {
+        constructInitializeAndAdd3DPreview();
 
         // Add a change listener to the tabbed pane
         mapViewerComboBox.addActionListener(new ActionListener() {
@@ -247,33 +262,35 @@ public class BattleRoomFrame extends JInternalFrame implements BattleObserver, A
             @Override
             public void actionPerformed(ActionEvent e) {
                 String title = mapViewerComboBox.getSelectedItem().toString();
+                
+                if (title.equals("Off")) {
+                    if (!mapViewerPanel.engineIsUninitialized()) {
+                        mapViewerPanel.hide();
+                    }
+                    return;
+                }
+
+                System.out.println(title);
 
                 // If engine is not running yet because we still don't have the map
-                if (mapViewerPanel.getEngine() == null || mapViewerPanel.getEngine().getGame().getMap() == null) {
-                    return;
+                if (mapViewerPanel.engineIsUninitialized()) {
+                    mapViewerPanel.init();
                 }
 
                 if (!title.equals("Off")) {
                     // Conditional initialization of OpenGL canvas in the panel if not already initialized
-                    mapViewerPanel.getEngine().setPaused(false);
-                    mapViewerPanel.setVisible(true);
+                    mapViewerPanel.show(unitSync, battle.getMapHash());
                 }
-                if (title.equals("Off")) {
-                    mapViewerPanel.getEngine().setPaused(true);
-                    mapViewerPanel.setVisible(false);
-                } else if (title.equals("Textured")) {
-                    mapViewerPanel.getEngine().getGame().getMap().setActiveTexture("minimap");
+
+                if (title.equals("Textured")) {
+                    mapViewerPanel.setMinimapActive();
                 } else if (title.equals("Heightmap")) {
-                    mapViewerPanel.getEngine().getGame().getMap().setActiveTexture("height");
+                    mapViewerPanel.setHeightmapActive();
                 } else if (title.equals("Metalmap")) {
+                    mapViewerPanel.setMetalmapActive();
                 }
             }
         });
-
-        // Hide
-        mapViewerPanel.setVisible(false);
-         * 
-         */
     }
 
     /**
@@ -306,8 +323,13 @@ public class BattleRoomFrame extends JInternalFrame implements BattleObserver, A
     }
 
     private void leave() {
+        System.out.println("Leaving battle.");
+        
         // Notify battleController we are leaving
         battleController.leaveBattle();
+
+        // disable mapViewer
+        disableMapViewer();
 
         // Hide frame until we want to use it next time
         setVisible(false);
@@ -325,11 +347,11 @@ public class BattleRoomFrame extends JInternalFrame implements BattleObserver, A
      */
     private void battleIsSeatEmpty() {
         // Check that we are not hammering the server
-        if((System.currentTimeMillis() - lastAutoUnspecAttempt) < autoUnspecAttemptInterval) {
+        if ((System.currentTimeMillis() - lastAutoUnspecAttempt) < autoUnspecAttemptInterval) {
             return;
         }
         // Check if we are too low rank to unspec
-        if(battle.getRankLimit() > self.getRank()) {
+        if (battle.getRankLimit() > self.getRank()) {
             return; // do nothing
         }
         // If we can rightly attempt to unspec, and the auto-unspec button selected

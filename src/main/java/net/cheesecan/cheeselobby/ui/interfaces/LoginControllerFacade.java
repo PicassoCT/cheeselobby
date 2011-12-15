@@ -67,4 +67,10 @@ public interface LoginControllerFacade {
      */
     public void guiIsReady();
 
+    /**
+     * Accept terms of use.
+     */
+    public void acceptTOS();
+
+
 }

@@ -221,4 +221,12 @@ public class SettingsFile {
             Logger.getLogger(SettingsFile.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+
+    public void setDefaultChannel(String text) {
+        config.setProperty("defaultChannel", text);
+    }
+
+    public String getDefaultChannel() {
+        return config.getString("defaultChannel");
+    }
 }

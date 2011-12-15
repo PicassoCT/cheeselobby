@@ -1,6 +1,5 @@
 package net.cheesecan.cheeselobby.tables;
 
-import java.awt.event.ContainerListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.ListSelectionModel;
@@ -8,7 +7,6 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
-import net.cheesecan.cheeselobby.tables.PackedTable;
 
 /**
  * @author jahziah
@@ -50,7 +48,7 @@ public class LobbyTable extends PackedTable {
         super.tableChanged(e);
         
         // When there is a fireTableStructureChanged event, we want to remember what row we had selected previously, if any
-        if(prevSelectedRow != -1) {
+        if(prevSelectedRow != -1 && prevSelectedRow <= getRowCount()) {
             setRowSelectionInterval(prevSelectedRow, prevSelectedRow);
         }
     }
@@ -63,7 +61,7 @@ public class LobbyTable extends PackedTable {
         super.setModel(dataModel);
 
         // Set selected row back
-        if(selRow != -1) {
+        if(selRow != -1 && selRow <= getRowCount()) {
             setRowSelectionInterval(selRow, selRow);
         }
     }

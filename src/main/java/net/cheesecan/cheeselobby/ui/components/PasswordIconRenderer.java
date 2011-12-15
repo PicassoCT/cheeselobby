@@ -33,7 +33,7 @@ public class PasswordIconRenderer extends BooleanRenderer {
     private ImageIcon passwordIcon;
 
     public PasswordIconRenderer() {
-        passwordIcon = new ImageIcon(getClass().getResource("/misc/password.png"));
+        passwordIcon = new ImageIcon(getClass().getResource("/img/status/password.png"));
     }
 
     @Override

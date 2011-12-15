@@ -17,6 +17,8 @@
 
 package net.cheesecan.cheeselobby.lobby_connection.interfaces;
 
+import java.io.StringReader;
+
 /**
  *
  * @author jahziah
@@ -44,4 +46,6 @@ public interface LoginObserver {
      * @param reason why the registration failed.
      */
     public void registrationFail(String reason);
+
+    public void displayAgreement(StringReader rtf);
 }

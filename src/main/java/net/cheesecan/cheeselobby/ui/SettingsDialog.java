@@ -12,9 +12,6 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -50,7 +47,6 @@ import org.pushingpixels.substance.api.skin.SkinInfo;
  */
 public class SettingsDialog extends JDialog implements ActionListener {
     // Appearance
-
     int width;
     int height;
     Color defaultFieldColor;
@@ -137,6 +133,13 @@ public class SettingsDialog extends JDialog implements ActionListener {
 
     private void saveSettings() throws HeadlessException {
         validatePerformListSyntax();
+
+        if (!isDefaultChannelValid()) {
+            JOptionPane.showMessageDialog(null, "You have entered a bad value for default channel.", "Bad value", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        } // else set it
+        settings.setDefaultChannel(defaultChannelField.getText());
+
         // Save all settings to settingsFile
         settings.setAutoJoinChannels(autoJoinTextField.getText());
         if (loggingEnabled.isEnabled()) {
@@ -156,6 +159,11 @@ public class SettingsDialog extends JDialog implements ActionListener {
             JOptionPane.showConfirmDialog(this, "You will have to restart the application for all changes to take full effect.", "Restart may be required", JOptionPane.OK_OPTION);
         }
         closeSettingsDialog();
+    }
+
+    private void closeSettingsDialog() {
+        setVisible(false);
+        //dispose();
     }
 
     private boolean validateDataDirField() {
@@ -209,9 +217,23 @@ public class SettingsDialog extends JDialog implements ActionListener {
         }
     }
 
-    private void closeSettingsDialog() {
-        setVisible(false);
-        //dispose();
+    private boolean isDefaultChannelValid() {
+        // Get autoperf list
+        String[] channels = autoJoinTextField.getText().split("\n");
+        String enteredChannel = defaultChannelField.getText();
+        // Default to the first channel on autperform list
+        if (enteredChannel.isEmpty()) {
+            defaultChannelField.setText(channels[0]);
+            return true;
+        } else {  // if not empty
+            // is it valid? check
+            for (String channel : channels) {
+                if (enteredChannel.equals(channel)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -254,7 +276,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private void initComponents() {
 
         loggingGroup = new ButtonGroup();
-        jPanel1 = new JPanel();
+        springOptionsPanel = new JPanel();
         unitSyncLabel = new JLabel();
         unitSyncPathField = new JTextField();
         browseUnitSyncButton = new JButton();
@@ -265,18 +287,20 @@ public class SettingsDialog extends JDialog implements ActionListener {
         browseSpringExeButton = new JButton();
         dataDirBrowse = new JButton();
         jButton1 = new JButton();
-        jPanel2 = new JPanel();
+        lobbyOptionsPanel = new JPanel();
         skinLabel = new JLabel();
         skinComboBox = new SubstanceSkinComboBox();
         loggingEnabled = new JCheckBox();
         channelAutojoinLabel = new JLabel();
         channelJoinScrollPane = new JScrollPane();
         autoJoinTextField = new JTextArea();
-        jPanel3 = new JPanel();
+        defaultChannelLabel = new JLabel();
+        defaultChannelField = new JTextField();
+        bottomPanel = new JPanel();
         saveButton = new JButton();
         cancelButton = new JButton();
 
-        jPanel1.setBorder(BorderFactory.createTitledBorder("Spring options"));
+        springOptionsPanel.setBorder(BorderFactory.createTitledBorder("Spring options"));
 
         unitSyncLabel.setText("Unitsync path:");
         unitSyncLabel.setToolTipText("The directory that contains Unitsync. \nIf you don't know what this is, set it to the same as the spring data directory.");
@@ -302,55 +326,55 @@ public class SettingsDialog extends JDialog implements ActionListener {
         jButton1.setToolTipText("Tries to find all files for you. ");
         jButton1.addActionListener(this);
 
-        GroupLayout jPanel1Layout = new GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(Alignment.LEADING)
+        GroupLayout springOptionsPanelLayout = new GroupLayout(springOptionsPanel);
+        springOptionsPanel.setLayout(springOptionsPanelLayout);
+        springOptionsPanelLayout.setHorizontalGroup(
+            springOptionsPanelLayout.createParallelGroup(Alignment.LEADING)
+            .addGroup(springOptionsPanelLayout.createSequentialGroup()
+                .addGroup(springOptionsPanelLayout.createParallelGroup(Alignment.LEADING)
                     .addComponent(unitSyncLabel)
-                    .addGroup(Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(unitSyncPathField, GroupLayout.DEFAULT_SIZE, 361, Short.MAX_VALUE)
+                    .addGroup(Alignment.TRAILING, springOptionsPanelLayout.createSequentialGroup()
+                        .addComponent(unitSyncPathField, GroupLayout.DEFAULT_SIZE, 363, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(browseUnitSyncButton))
                     .addComponent(springExeLbl)
-                    .addGroup(Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(springExeField, GroupLayout.DEFAULT_SIZE, 361, Short.MAX_VALUE)
+                    .addGroup(Alignment.TRAILING, springOptionsPanelLayout.createSequentialGroup()
+                        .addComponent(springExeField, GroupLayout.DEFAULT_SIZE, 363, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(browseSpringExeButton))
                     .addComponent(dataDirectoryLabel)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(dataDirectoryField, GroupLayout.DEFAULT_SIZE, 361, Short.MAX_VALUE)
+                    .addGroup(springOptionsPanelLayout.createSequentialGroup()
+                        .addComponent(dataDirectoryField, GroupLayout.DEFAULT_SIZE, 363, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(dataDirBrowse))
                     .addComponent(jButton1))
                 .addContainerGap())
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        springOptionsPanelLayout.setVerticalGroup(
+            springOptionsPanelLayout.createParallelGroup(Alignment.LEADING)
+            .addGroup(springOptionsPanelLayout.createSequentialGroup()
                 .addComponent(unitSyncLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(Alignment.BASELINE)
+                .addGroup(springOptionsPanelLayout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(unitSyncPathField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(browseUnitSyncButton))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(springExeLbl)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(Alignment.BASELINE)
+                .addGroup(springOptionsPanelLayout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(springExeField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(browseSpringExeButton))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(dataDirectoryLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(Alignment.BASELINE)
+                .addGroup(springOptionsPanelLayout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(dataDirectoryField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(dataDirBrowse))
                 .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jButton1))
         );
 
-        jPanel2.setBorder(BorderFactory.createTitledBorder("Lobby options"));
+        lobbyOptionsPanel.setBorder(BorderFactory.createTitledBorder("Lobby options"));
 
         skinLabel.setText("Theme:");
 
@@ -366,27 +390,34 @@ public class SettingsDialog extends JDialog implements ActionListener {
         autoJoinTextField.setText("main\ncheeselobby");
         channelJoinScrollPane.setViewportView(autoJoinTextField);
 
-        GroupLayout jPanel2Layout = new GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
+        defaultChannelLabel.setText("Default channel:");
+
+        GroupLayout lobbyOptionsPanelLayout = new GroupLayout(lobbyOptionsPanel);
+        lobbyOptionsPanel.setLayout(lobbyOptionsPanelLayout);
+        lobbyOptionsPanelLayout.setHorizontalGroup(
+            lobbyOptionsPanelLayout.createParallelGroup(Alignment.LEADING)
+            .addGroup(lobbyOptionsPanelLayout.createSequentialGroup()
                 .addComponent(skinLabel)
-                .addContainerGap(390, Short.MAX_VALUE))
-            .addComponent(skinComboBox, 0, 443, Short.MAX_VALUE)
-            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap(394, Short.MAX_VALUE))
+            .addComponent(skinComboBox, 0, 447, Short.MAX_VALUE)
+            .addGroup(lobbyOptionsPanelLayout.createSequentialGroup()
                 .addComponent(loggingEnabled)
-                .addContainerGap(318, Short.MAX_VALUE))
-            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap(319, Short.MAX_VALUE))
+            .addGroup(lobbyOptionsPanelLayout.createSequentialGroup()
                 .addComponent(channelAutojoinLabel)
                 .addContainerGap())
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addComponent(channelJoinScrollPane, GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
+            .addGroup(lobbyOptionsPanelLayout.createSequentialGroup()
+                .addComponent(defaultChannelLabel)
+                .addContainerGap())
+            .addGroup(Alignment.TRAILING, lobbyOptionsPanelLayout.createSequentialGroup()
+                .addGroup(lobbyOptionsPanelLayout.createParallelGroup(Alignment.TRAILING)
+                    .addComponent(defaultChannelField, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 435, Short.MAX_VALUE)
+                    .addComponent(channelJoinScrollPane, GroupLayout.DEFAULT_SIZE, 435, Short.MAX_VALUE))
                 .addContainerGap())
         );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
+        lobbyOptionsPanelLayout.setVerticalGroup(
+            lobbyOptionsPanelLayout.createParallelGroup(Alignment.LEADING)
+            .addGroup(lobbyOptionsPanelLayout.createSequentialGroup()
                 .addComponent(skinLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(skinComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
@@ -396,7 +427,11 @@ public class SettingsDialog extends JDialog implements ActionListener {
                 .addComponent(channelAutojoinLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(channelJoinScrollPane, GroupLayout.PREFERRED_SIZE, 156, GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(defaultChannelLabel)
+                .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(defaultChannelField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         saveButton.setText("Save");
@@ -405,20 +440,20 @@ public class SettingsDialog extends JDialog implements ActionListener {
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(this);
 
-        GroupLayout jPanel3Layout = new GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
+        GroupLayout bottomPanelLayout = new GroupLayout(bottomPanel);
+        bottomPanel.setLayout(bottomPanelLayout);
+        bottomPanelLayout.setHorizontalGroup(
+            bottomPanelLayout.createParallelGroup(Alignment.LEADING)
+            .addGroup(bottomPanelLayout.createSequentialGroup()
                 .addComponent(saveButton)
                 .addPreferredGap(ComponentPlacement.RELATED, 355, Short.MAX_VALUE)
                 .addComponent(cancelButton))
         );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
+        bottomPanelLayout.setVerticalGroup(
+            bottomPanelLayout.createParallelGroup(Alignment.LEADING)
+            .addGroup(bottomPanelLayout.createSequentialGroup()
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel3Layout.createParallelGroup(Alignment.BASELINE)
+                .addGroup(bottomPanelLayout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(saveButton)
                     .addComponent(cancelButton)))
         );
@@ -430,19 +465,19 @@ public class SettingsDialog extends JDialog implements ActionListener {
             .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(Alignment.TRAILING)
-                    .addComponent(jPanel1, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel2, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel3, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(lobbyOptionsPanel, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(springOptionsPanel, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(bottomPanel, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jPanel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addComponent(lobbyOptionsPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addGap(31, 31, 31)
+                .addComponent(springOptionsPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(jPanel1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(jPanel3, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addComponent(bottomPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -481,6 +516,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         springExeField.setText(settings.getSpringExePath());
         dataDirectoryField.setText(settings.getSpringDataDirectory());
         skinComboBox.setSelectedItem("org.pushingpixels.substance.api.skin." + settings.getTheme());
+        defaultChannelField.setText(settings.getDefaultChannel());
     }
 
     private File findFile(String soughtFile, File startLocation) {
@@ -648,6 +684,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     }//GEN-LAST:event_jButton1ActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JTextArea autoJoinTextField;
+    private JPanel bottomPanel;
     private JButton browseSpringExeButton;
     private JButton browseUnitSyncButton;
     private JButton cancelButton;
@@ -656,10 +693,10 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private JButton dataDirBrowse;
     private JTextField dataDirectoryField;
     private JLabel dataDirectoryLabel;
+    private JTextField defaultChannelField;
+    private JLabel defaultChannelLabel;
     private JButton jButton1;
-    private JPanel jPanel1;
-    private JPanel jPanel2;
-    private JPanel jPanel3;
+    private JPanel lobbyOptionsPanel;
     private JCheckBox loggingEnabled;
     private ButtonGroup loggingGroup;
     private JButton saveButton;
@@ -667,6 +704,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private JLabel skinLabel;
     private JTextField springExeField;
     private JLabel springExeLbl;
+    private JPanel springOptionsPanel;
     private JLabel unitSyncLabel;
     private JTextField unitSyncPathField;
     // End of variables declaration//GEN-END:variables

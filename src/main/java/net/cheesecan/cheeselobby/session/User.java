@@ -21,6 +21,7 @@ public class User implements SessionObject {
     private boolean accessStatus;
     private boolean botMode;
     private int hostingBattleId;    // is this user hosting a battle, if so that battle's id is stored here
+    private int inBattle;           // if we know this user is in a battle
 
     // battle fields
     private GameStatus gameStatus;
@@ -322,8 +323,6 @@ public class User implements SessionObject {
         return hostingBattleId;
     }
 
-
-
     public void setHostingBattleId(int hostingBattleId) {
         this.hostingBattleId = hostingBattleId;
     }
@@ -369,4 +368,17 @@ public class User implements SessionObject {
         }
         return 1;
     }
+
+    public int getInBattle() {
+        return inBattle;
+    }
+
+    public void setInBattle(int inBattle) {
+        this.inBattle = inBattle;
+    }
+
+    public void setUserNotInBattle() {
+        setInBattle(-1);
+    }
+
 }

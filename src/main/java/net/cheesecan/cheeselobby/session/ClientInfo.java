@@ -1,7 +1,6 @@
 package net.cheesecan.cheeselobby.session;
 
 import java.security.NoSuchAlgorithmException;
-import net.cheesecan.cheeselobby.session.MD5Base64Hash;
 
 /**
  *

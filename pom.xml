@@ -1,92 +1,106 @@
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <groupId>net.cheesecan</groupId>
     <artifactId>cheeselobby</artifactId>
-    <packaging>jar</packaging>
-    <version>0.1-SNAPSHOT</version>
-    <name>CheeseLobby</name>
-    <url>http://maven.apache.org</url>
-    <scm>
-        <connection>scm:git:git@github.com:jahwag/cheeselobby.git</connection>
-        <url>https://github.com/jahwag/cheeselobby.git</url>
-        <developerConnection>scm:git:git@github.com:jahwag/cheeselobby.git</developerConnection>
-    </scm>
-    <issueManagement>
-        <system>github</system>
-        <url>https://github.com/jahwag/cheeselobby/issues</url>
-    </issueManagement>
-    <developers>
-        <developer>
-            <name>cheesecan</name>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-    </developers>
-    <licenses>
-        <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
+    <version>0.2-SNAPSHOT</version>
+    <properties>
+        <main.class>net.cheesecan.cheeselobby.ui.NewMainFrame</main.class>
+        <lwjgl.version>2.7.1</lwjgl.version>
+        <lwjgl.natives>${project.build.directory}/lib/lwjgl/natives</lwjgl.natives>
+    </properties>
     <build>
         <plugins>
-        <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.2-beta-4</version>
-                <executions>
-                    <execution>
-                        <id>jar-with-deps</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.0.2</version>
                 <configuration>
-                    <archive>
-                    <manifest>
-                      <mainClass>net.springrts.cc.cheeselobby.gui.windows.gui.NewMainFrame</mainClass>
-                    </manifest>
-                  </archive>
-                    <descriptors>
-                        <descriptor>src/main/assembly.xml</descriptor>
-                    </descriptors>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                    <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.0.2</version>
+                <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <archive>
+                        <manifest>
+                            <mainClass>${main.class}</mainClass>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2-beta-2</version>
+                <executions>
+                    <execution>
+                        <id>bundle-project-sources</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>/src/main/assembly.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <systemProperties>
+                        <systemProperty>
+                            <key>org.lwjgl.librarypath</key>
+                            <value>/home/jahziah/cheese-lobby/natives</value>
+                        </systemProperty>
+                    </systemProperties>
+                    <mainClass>${main.class}</mainClass>
+                    <argument>-classpath</argument>
+                      <!-- automatically creates the classpath using all project dependencies,
+                      also adding the project build directory-->
+                    <classpath/>
                 </configuration>
             </plugin>
         </plugins>
     </build>
+      
+    <repositories>
+        <repository>
+            <id>lwjgl</id>
+            <name>lwjgl</name>
+            <url>http://adterrasperaspera.com/lwjgl</url>
+        </repository>
+        <repository>
+            <id>official slick repo</id>
+            <url>http://slick.cokeandcode.com/mavenrepo</url>
+        </repository>
+    </repositories>
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>3.8.1</version>
-            <scope>test</scope>
+            <groupId>org.lwjgl</groupId>
+            <artifactId>lwjgl</artifactId>
+            <version>${lwjgl.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.java.net.substance</groupId>
-            <artifactId>substance</artifactId>
-            <version>6.0</version>
-        </dependency>
-        <dependency>
-            <groupId>biz.source_code</groupId>
-            <artifactId>base64coder</artifactId>
-            <version>2010-09-21</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-codec</groupId>
-            <artifactId>commons-codec</artifactId>
-            <version>1.4</version>
+            <groupId>org.lwjgl</groupId>
+            <artifactId>lwjgl-util</artifactId>
+            <version>${lwjgl.version}</version>
         </dependency>
         <dependency>
             <groupId>slick</groupId>
@@ -94,24 +108,25 @@
             <version>274</version>
         </dependency>
         <dependency>
-            <groupId>org.lwjgl</groupId>
-            <artifactId>lwjgl</artifactId>
-            <version>2.6</version>
+            <groupId>org.java.net.substance</groupId>
+            <artifactId>substance</artifactId>
+            <version>6.0</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>android</artifactId>
+                    <groupId>com.google.android</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.lwjgl</groupId>
-            <artifactId>lwjgl-util</artifactId>
-            <version>2.6</version>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.4</version>
         </dependency>
         <dependency>
-            <groupId>org.lwjgl</groupId>
-            <artifactId>jinput</artifactId>
-            <version>2.6</version>
-        </dependency>
-        <dependency>
-            <groupId>net.springrts.tools</groupId>
-            <artifactId>unitsync</artifactId>
-            <version>1.2.2</version>
+            <groupId>org.ini4j</groupId>
+            <artifactId>ini4j</artifactId>
+            <version>0.5.1</version>
         </dependency>
         <dependency>
             <groupId>commons-configuration</groupId>
@@ -119,37 +134,49 @@
             <version>1.6</version>
         </dependency>
         <dependency>
-            <groupId>org.ini4j</groupId>
-            <artifactId>ini4j</artifactId>
-            <version>0.5.1</version>
+            <groupId>net.springrts.tools</groupId>
+            <artifactId>unitsync</artifactId>
+            <version>1.2.2</version>
         </dependency>
     </dependencies>
-    <groupId>net.cheesecan</groupId>
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <configuration>
-                    <configLocation>config/sun_checks.xml</configLocation>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-changelog-plugin</artifactId>
-                <version>2.2</version>
-            </plugin>
-        </plugins>
-    </reporting>
-    <repositories>
-        <repository>
-            <id>official slick repo</id>
-            <url>http://slick.cokeandcode.com/mavenrepo</url>
-        </repository>
-    </repositories>
-    <description>A multiplayer lobby for the open-source RTS game Spring.</description>
+      
+      
+    <profiles>
+        <profile>
+            <id>linux</id>
+            <activation>
+                <os>
+                    <family>unix</family>
+                    <name>linux</name>
+                </os>
+            </activation>
+            <properties>
+                <lwjgl.native>${lwjgl.natives}/linux</lwjgl.native>
+            </properties>
+        </profile>
+        <profile>
+            <id>macosx</id>
+            <activation>
+                <os>
+                    <family>unix</family>
+                    <name>mac os x</name>
+                </os>
+            </activation>
+            <properties>
+                <lwjgl.native>${lwjgl.natives}/macosx</lwjgl.native>
+            </properties>
+        </profile>
+        <profile>
+            <id>win32</id>
+            <activation>
+                <os>
+                    <arch>x86</arch>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <properties>
+                <lwjgl.native>${lwjgl.natives}/win32</lwjgl.native>
+            </properties>
+        </profile>
+    </profiles>
 </project>

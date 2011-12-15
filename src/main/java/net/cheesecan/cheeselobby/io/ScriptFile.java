@@ -50,7 +50,7 @@ public class ScriptFile {
         ini.put("GAME", "HostPort", port+";");
         ini.put("GAME", "IsHost", 0+";");   // TODO
         ini.put("GAME", "MyPlayerName", playerName+";");
-        //ini.put("GAME", "MyPasswd", myPasswd+";");
+        ini.put("GAME", "MyPasswd", myPasswd+";");
         ini.store(); // write to file
 
         // Time to add brackets to the file, the old fashioned way(TM)

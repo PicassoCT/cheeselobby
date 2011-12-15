@@ -30,6 +30,7 @@ import net.cheesecan.cheeselobby.ui.interfaces.ChatControllerFacade;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.net.Socket;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -48,8 +49,10 @@ import net.cheesecan.cheeselobby.session.ServerMessage;
 import net.cheesecan.cheeselobby.session.ThreadState;
 import net.cheesecan.cheeselobby.session.LobbyException.ListenerException;
 import net.cheesecan.cheeselobby.lobby_connection.interfaces.LoginObserver;
+import net.cheesecan.cheeselobby.session.MD5Base64Hash;
 import net.cheesecan.cheeselobby.session.User;
 import net.cheesecan.cheeselobby.session.User.GameStatus;
+import net.cheesecan.cheeselobby.ui.interfaces.Disconnectable;
 
 /**
  *
@@ -65,6 +68,7 @@ public class SessionController extends Thread implements BattleListControllerFac
     private ChatObserver chatObserver;
     private BattleListObserver battleListObserver;
     private BattleObserver battleObserver;
+    private Disconnectable mainFrame;
     // Connections
     private Socket socket;
     private ListenerThread listener;
@@ -88,12 +92,16 @@ public class SessionController extends Thread implements BattleListControllerFac
     private long pingTimeout;
     // Application info
     private SettingsFile settings;
+    // Used for agreement message only, TODO consider refactoring
+    StringBuffer agreement = new StringBuffer();
+    private String battlePswd;
 
     /**
      * Initializes members.
      */
-    public SessionController(SettingsFile settings) {
+    public SessionController(SettingsFile settings, Disconnectable main) {
         setName("CheeseLobbyController");
+        mainFrame = main;
         tasks = new LinkedBlockingQueue<Runnable>();
         usersOnServer = new HashMap<String, User>();
         battlesOnServer = Collections.synchronizedMap(new HashMap<Integer, Battle>());
@@ -101,7 +109,6 @@ public class SessionController extends Thread implements BattleListControllerFac
         threadState = ThreadState.Started;
         guiReady = false;
         isLoggedIn = false;
-        listener = new ListenerThread(this);
         lastPing = 0;
         ping = true;            // initialize to true to begin pinging
         minPingDelay = 5000;    // 5 seconds
@@ -121,9 +128,6 @@ public class SessionController extends Thread implements BattleListControllerFac
             } catch (ListenerException ex) {
                 Logger.getLogger(SessionController.class.getName()).log(Level.SEVERE, null, ex);
             }
-
-            // Send ping message if ping timer expired
-            sendPing();
 
             // Sleep for 0.1 s
             try {
@@ -159,7 +163,7 @@ public class SessionController extends Thread implements BattleListControllerFac
      */
     private void handleServerMessages() throws ListenerException {
         // Listener must be on to listen for server messages, and GUI must be ready to accept callbacks
-        if (listener == null || !guiReady) {
+        if (listener == null) {// || !guiReady
             return;
         }
 
@@ -167,6 +171,9 @@ public class SessionController extends Thread implements BattleListControllerFac
         while ((msg = listener.popQueueItem()) != null) {    // until queue is empty
             handleServerMessage(msg);
         }
+
+        // Send ping message if ping timer expired
+        sendPing();
     }
 
     private void handleServerMessage(String message) {
@@ -174,14 +181,24 @@ public class SessionController extends Thread implements BattleListControllerFac
         String[] words = sentences[0].split(" ");   // regex for spaces
         String command = words[0];
 
-        // Print command for debug purposes
-        //for (String sen : sentences) {
-        //    System.out.println(sen + " ");
-        //}
-
         ServerMessage commandMatch = ServerMessage.valueOf(command);    // match command to a ServerMessage enum for faster comparisons in a switch
 
         switch (commandMatch) {
+            case SERVERMSG:
+                chatObserver.notifyBroadcastMessage("Official server", sentences[0]);
+                break;
+            case ACCEPTED:
+                loginObserver.loginSuccess();
+                break;
+            case DENIED:
+                loginObserver.loginFail(sentences[0]);
+                break;
+            case AGREEMENT:
+                agreement.append(message.substring(9));
+                break;
+            case AGREEMENTEND:
+                loginObserver.displayAgreement(new StringReader(agreement.toString()));
+                break;
             case MOTD:
                 chatObserver.messageOfTheDay(sentences[0]);
                 break;
@@ -203,18 +220,24 @@ public class SessionController extends Thread implements BattleListControllerFac
                 playSound("ring.wav");
                 break;
             case JOINEDBATTLE:
+                int battleUserJoined = Integer.valueOf(words[1]);
+                String userJoined = words[2];
+
+                // Set thatu ser is in battle
+                usersOnServer.get(userJoined).setInBattle(battleUserJoined);
+
                 // Add user to battle
-                usersInBattles.get(Integer.valueOf(words[1])).add(usersOnServer.get(words[2]));
+                usersInBattles.get(battleUserJoined).add(usersOnServer.get(userJoined));
 
                 // Update the number of users in that battle
-                battlesOnServer.get(Integer.valueOf(words[1])).setNumPlayers(usersInBattles.get(Integer.valueOf(words[1])).size());
+                battlesOnServer.get(battleUserJoined).setNumPlayers(usersInBattles.get(battleUserJoined).size());
 
                 // Notify battleListObserver of the change
-                battleListObserver.updateBattle(battlesOnServer.get(Integer.valueOf(words[1])));
+                battleListObserver.updateBattle(battlesOnServer.get(battleUserJoined));
 
                 // If this is our current battle, notify the battleObserver as well
-                if (currentBattle == Integer.valueOf(words[1])) {
-                    battleObserver.updateUser(usersOnServer.get(words[2]), usersOnServer.get(words[2]).getGameStatus());
+                if (currentBattle == battleUserJoined) {
+                    battleObserver.updateUser(usersOnServer.get(userJoined), usersOnServer.get(userJoined).getGameStatus());
                 }
                 break;
             case JOINFAILED:    // failed to join channel
@@ -312,16 +335,16 @@ public class SessionController extends Thread implements BattleListControllerFac
                 break;
             case JOINBATTLE:
                 // We have joined a battle so notify the battleObserver
-                int battleId = Integer.valueOf(words[1]);
+                int battleJoined = Integer.valueOf(words[1]);
 
                 // Update our own user for battleObser
                 battleObserver.setOwnUser(usersOnServer.get(username));
 
                 // Display battle
-                battleObserver.displayBattle(battlesOnServer.get(battleId));
+                battleObserver.displayBattle(battlesOnServer.get(battleJoined));
 
                 // Set our current battle
-                currentBattle = battleId;
+                currentBattle = battleJoined;
                 break;
             case MYBATTLESTATUS:
                 // Update our own user for battleObser
@@ -364,7 +387,7 @@ public class SessionController extends Thread implements BattleListControllerFac
                         battlesOnServer.get(user.getHostingBattleId()).setStarted();
                     } else {
                         // Set battle as started
-                        battlesOnServer.get(user.getHostingBattleId()).setNotStarted();
+                        battlesOnServer.get(user.getHostingBattleId()).setEnded();
                     }
                 }
                 break;
@@ -436,23 +459,23 @@ public class SessionController extends Thread implements BattleListControllerFac
         Clip clip = null;
         AudioInputStream audioInputStream = null;
         try {
-            audioInputStream = AudioSystem.getAudioInputStream(new File(soundFile));
+        audioInputStream = AudioSystem.getAudioInputStream(new File(soundFile));
 
-            clip = AudioSystem.getClip();
-            clip.open(audioInputStream);
+        clip = AudioSystem.getClip();
+        clip.open(audioInputStream);
 
-            clip.start();
-            clip.drain();
+        clip.start();
+        clip.drain();
         } catch(Exception e ) {
-            
+
         }
         finally {
-            clip.close();
-            try {
-                audioInputStream.close();
-            } catch (IOException ex) {
-                Logger.getLogger(SessionController.class.getName()).log(Level.SEVERE, null, ex);
-            }
+        clip.close();
+        try {
+        audioInputStream.close();
+        } catch (IOException ex) {
+        Logger.getLogger(SessionController.class.getName()).log(Level.SEVERE, null, ex);
+        }
         }
          * 
          */
@@ -548,6 +571,8 @@ public class SessionController extends Thread implements BattleListControllerFac
     @Override
     public void login(final String username, final String passwordPlaintext) {
         this.username = username;
+        final SessionController thisPtr = this;
+
         tasks.add(new Runnable() {
 
             @Override
@@ -565,45 +590,28 @@ public class SessionController extends Thread implements BattleListControllerFac
                 try {
                     socket = new Socket(settings.getServerHostname(), settings.getServerPort());
 
-                    // Recieve greeting message from server
+                    // Start to recieve messages from server
                     BufferedReader tmpIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                     String reply = tmpIn.readLine();
 
                     String substr = reply.substring(0, 9);
                     if (!substr.equals("TASServer")) {
                         loginObserver.loginFail("Could not connect to lobby server.");
-                        return;
-                        // throw new LoginException("Could not connect to lobby server.");
                     }
 
                     // Prepare login message
                     String loginMsg = "LOGIN " + clientObj.getName() + " " + clientObj.getPasswordMd5Base64().replaceAll("\\r\\n", "") + " " + clientObj.getCpuFrequency() + " "
                             + clientObj.getLocalHost();
 
-                    // Send login message
-                    sendMessage(loginMsg);
-
-                    // Recieve greeting message from server
-                    reply = tmpIn.readLine();
-
-                    // Check if login was successful
-                    substr = reply.substring(0, 8);
-                    if (substr.equals("ACCEPTED")) {
-                        System.out.println("Login was successful.");
-                    } else {
-                        System.out.println("Login failed.");
-                        loginObserver.loginFail("Bad username or password.");
-                        return;
-                        //  throw new LoginException("Bad username or password.");
-                    }
-
                     // Start listener thread
+                    listener = new ListenerThread(thisPtr);
                     listener.setInputStream(tmpIn);
                     listener.start();
 
-                    loginObserver.loginSuccess();   // notify observer of success
+                    // Send login message
+                    sendMessage(loginMsg);
                 } catch (IOException ex) {
-                    loginObserver.loginFail("Couldn't establish connection to " + settings.getServerHostname() +":"+ settings.getServerPort() );
+                    loginObserver.loginFail("Couldn't establish connection to " + settings.getServerHostname() + ":" + settings.getServerPort());
                     // throw new LoginException(ex.getCause().getMessage());
                 }
             }
@@ -612,12 +620,65 @@ public class SessionController extends Thread implements BattleListControllerFac
 
     @Override
     public void disconnect() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        tasks.add(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    // TODO disconnect
+                    listener.disconnect();
+                    listener = null;
+                    socket.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(SessionController.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+            }
+        });
     }
 
     @Override
-    public void register(String username, String passwordPlaintext) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void register(final String username, final String passwordPlaintext) {
+        tasks.add(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    socket = new Socket(settings.getServerHostname(), settings.getServerPort());
+
+                    // Start to recieve messages from server
+                    BufferedReader tmpIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    String reply = tmpIn.readLine();
+
+                    String substr = reply.substring(0, 9);
+                    if (!substr.equals("TASServer")) {
+                        loginObserver.loginFail("Could not connect to lobby server.");
+                    }
+
+                    String passwordHash = MD5Base64Hash.encrypt(passwordPlaintext).replaceAll("\\r\\n", "");
+
+                    String registrationMsg = "REGISTER " + username + " " + passwordHash;
+
+                    // System.out.println(registrationMsg);
+
+                    sendMessage(registrationMsg);
+
+                    // Listen for reply
+                    reply = tmpIn.readLine();
+
+                    if (reply.equals("REGISTRATIONACCEPTED")) {
+                        loginObserver.registrationSuccess();
+                    } else {  // if it failed
+                        loginObserver.registrationFail(reply.substring(18));
+                    }
+
+                } catch (NoSuchAlgorithmException ex) {
+                    Logger.getLogger(SessionController.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    Logger.getLogger(SessionController.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
     }
 
     @Override
@@ -770,11 +831,13 @@ public class SessionController extends Thread implements BattleListControllerFac
 
             @Override
             public void run() {
+                battlePswd = String.valueOf(username.hashCode());
+                
                 try {
                     if (psw == null) {
-                        sendMessage("JOINBATTLE " + battleId);
+                        sendMessage("JOINBATTLE " + battleId + " " +" "+ battlePswd);
                     } else {  // send password too
-                        sendMessage("JOINBATTLE " + battleId + " " + psw);
+                        sendMessage("JOINBATTLE " + battleId + " " + psw +" "+ battlePswd);
                     }
                 } catch (IOException ex) {
                     Logger.getLogger(SessionController.class.getName()).log(Level.SEVERE, null, ex);
@@ -829,20 +892,21 @@ public class SessionController extends Thread implements BattleListControllerFac
         // Get battle info object
         Battle b = battlesOnServer.get(currentBattle);
 
+        String scriptFilePath = "";
         // Write script.txt
         try {
             String ip = b.getIp();
             int port = b.getPort();
-            String username = getUsername();
-            String scriptFilePath = settings.getSpringDataDirectory() + "/script.txt";
-            new ScriptFile(ip, port, false, username, "", scriptFilePath);
+            scriptFilePath = settings.getSpringDataDirectory() + "/script.txt";
+            new ScriptFile(ip, port, false, username, battlePswd, scriptFilePath);
         } catch (IOException ex) {
             Logger.getLogger(SessionController.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         // Launch game
         try {
-            String springExePath = settings.getSpringExePath() + " script.txt";
+            String springExePath = settings.getSpringExePath() +" "+ scriptFilePath;
+            System.out.println(springExePath);
             Runtime.getRuntime().exec(springExePath);
         } catch (IOException ex) {
             Logger.getLogger(SessionController.class.getName()).log(Level.SEVERE, null, ex);
@@ -875,5 +939,51 @@ public class SessionController extends Thread implements BattleListControllerFac
         } catch (IOException ex) {
             Logger.getLogger(SessionController.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    @Override
+    public void acceptTOS() {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    sendMessage("CONFIRMAGREEMENT");
+                } catch (IOException ex) {
+                    Logger.getLogger(SessionController.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void joinSameBattleAsUser(final String username) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                int battleId = usersOnServer.get(username).getInBattle();
+                if(battleId != -1) {
+                    joinBattle(battleId, null);
+                }
+                // else user left the battle already
+            }
+        });
+    }
+
+    @Override
+    public void rename(final String name) {
+         SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    sendMessage("RENAMEACCOUNT " + name);
+                    mainFrame.disconnect(username, name, "You have been automatically disconnected because your account name has changed.");
+                } catch (IOException ex) {
+                    Logger.getLogger(SessionController.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
     }
 }

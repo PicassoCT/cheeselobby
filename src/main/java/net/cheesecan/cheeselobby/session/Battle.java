@@ -149,6 +149,9 @@ public class Battle implements SessionObject {
     public void setNumPlayers(int numPlayers) {
         int i = numPlayers - getNumSpectators();
         this.numPlayers = i < 0 ? 0 : i;
+
+        // check if battle is closed
+        battleIsLocked();
     }
 
     public int getNumSpectators() {
@@ -157,6 +160,9 @@ public class Battle implements SessionObject {
 
     public void setNumSpectators(int numSpectators) {
         this.numSpectators = numSpectators;
+
+        // check if battle is closed
+        battleIsLocked();
     }
 
     public int getPassworded() {
@@ -187,6 +193,17 @@ public class Battle implements SessionObject {
         this.rankLimit = rankLimit;
     }
 
+    private void battleIsLocked() {
+        if ((numPlayers) >= maxPlayers) {
+            if(isStarted()) {
+            status = BattleStatus.closedAndStarted;
+            }
+            else {
+                status = BattleStatus.closed;
+            }
+        }
+    }
+
     public BattleStatus getStatus() {
         return status;
     }
@@ -195,20 +212,26 @@ public class Battle implements SessionObject {
         this.status = status;
     }
 
+    private boolean isOpen() {
+        return status == BattleStatus.open;
+    }
+
+    private boolean isStarted() {
+        return status == BattleStatus.openAndStarted || status == BattleStatus.closedAndStarted;
+    }
+
     public void setStarted() {
-        if(status == BattleStatus.open) {
+        if (isOpen()) {
             status = BattleStatus.openAndStarted;
-        }
-        else if(status == BattleStatus.closed) {
+        } else {
             status = BattleStatus.closedAndStarted;
         }
     }
 
-    public void setNotStarted() {
-        if(status == BattleStatus.openAndStarted) {
+    public void setEnded() {
+        if (isOpen()) {
             status = BattleStatus.open;
-        }
-        else if(status == BattleStatus.closedAndStarted) {
+        } else {
             status = BattleStatus.closed;
         }
     }

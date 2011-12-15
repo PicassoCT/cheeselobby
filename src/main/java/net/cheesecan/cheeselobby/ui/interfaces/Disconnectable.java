@@ -15,24 +15,14 @@
  *  under the License.
  */
 
-package net.cheesecan.cheeselobby.tables;
-
-import java.util.List;
-import net.cheesecan.cheeselobby.session.User;
+package net.cheesecan.cheeselobby.ui.interfaces;
 
 /**
  *
  * @author jahziah
  */
-public class BattleUserTableModel extends LobbyTableModel<User> {
+public interface Disconnectable {
 
-    public BattleUserTableModel(List<User> users, String[] columnNames) {
-        super(users, columnNames, 1);   // sort by status by default
-    }
-
-    @Override
-    public Object getValueAt(int row, int column) {
-        return ((User)getData().get(row)).getBattleTableValueByIndex(column);
-    }
+    public void disconnect(String previousName, String newName, String reason);
 
 }

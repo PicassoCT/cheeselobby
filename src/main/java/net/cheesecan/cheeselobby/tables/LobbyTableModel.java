@@ -31,16 +31,12 @@ public class LobbyTableModel<E extends SessionObject> extends DefaultTableModel 
     // Fields
     private List<E> data;
     private String[] columnNames;
-    // We keep track of in what order we have sorted
-    protected boolean isSortedAscending;
-    //private int lastHighlightedRow;
     private ColumnComparator[] comparator;
     private int lastSortedBy;   // remember the column we sorted by last time
 
     public LobbyTableModel(List<E> sessionObjects, String[] columnNames, int initiallySortedByColumn) {
         this.data = sessionObjects;
         this.columnNames = columnNames;
-        isSortedAscending = false;
         lastSortedBy = initiallySortedByColumn;
 
         // Initialize comparator for each column
@@ -123,7 +119,6 @@ public class LobbyTableModel<E extends SessionObject> extends DefaultTableModel 
     public void sort(int column) {
         if(column == lastSortedBy) {
             // Flip value if this is the same column as last time
-            isSortedAscending = !isSortedAscending;
             comparator[column].flip();
         }
         // Set lastSortedBy

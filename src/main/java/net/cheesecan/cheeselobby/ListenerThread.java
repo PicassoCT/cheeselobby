@@ -39,7 +39,7 @@ public class ListenerThread extends Thread {
         this.in = in;
     }
 
-    private void read() throws ListenerException {
+    private void read() {
         try {
             String str;
             while ((str = in.readLine()) != null) { // while there are things to read
@@ -51,22 +51,22 @@ public class ListenerThread extends Thread {
                     queue.add(str);                 // add to queue
                 }
                 // Write msg to a file
-                logWriter.write(str + "\n");    
-                logWriter.flush();              
+                logWriter.write(str + "\n");
+                logWriter.flush();
             }
         } catch (IOException ex) {
-            throw new ListenerException(ex.getCause().getMessage());
+            if (threadState == ThreadState.Stopped) {
+                System.err.println("Listener thread was stopped while trying to read.");
+            } else {
+                System.err.println(ex.getCause().getMessage());
+            }
         }
     }
 
     @Override
     public void run() {
         while (threadState == ThreadState.Started) {
-            try {
-                read();
-            } catch (ListenerException ex) {
-                Logger.getLogger(ListenerThread.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            read();
         }
     }
 
@@ -83,5 +83,14 @@ public class ListenerThread extends Thread {
         String item = queue.peek();
         queue.remove();
         return item;
+    }
+
+    public void disconnect() {
+        try {
+            threadState = ThreadState.Stopped;
+            in.close();
+        } catch (IOException ex) {
+            Logger.getLogger(ListenerThread.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }

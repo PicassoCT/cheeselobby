@@ -34,6 +34,7 @@ public class LobbyIcons {
     private final Map<String, ImageIcon> countryIcons;
     private final Map<String, ImageIcon> rankIcons;
     private final Map<String, ImageIcon> statusIcons;
+    private final Map<String, ImageIcon> playerStatusIcons;
     private final Map<String, ImageIcon> battleStatusIcons;
 
     public LobbyIcons() {
@@ -47,7 +48,7 @@ public class LobbyIcons {
             }
         }
         // Insert ?? icon
-        countryIcons.put("??", new ImageIcon(getClass().getResource("/img/flags/??.png")));
+        countryIcons.put("??", new ImageIcon(getClass().getResource("/img/flags/__.png")));
 
         // Generate rank icons
         rankIcons = new HashMap<String, ImageIcon>();
@@ -69,6 +70,11 @@ public class LobbyIcons {
         battleStatusIcons.put(BattleStatus.openAndStarted.name().toLowerCase(), new ImageIcon(getClass().getResource("/img/icons/battle/openandstarted.png")));
         battleStatusIcons.put(BattleStatus.closed.name().toLowerCase(), new ImageIcon(getClass().getResource("/img/icons/battle/closed.png")));
         battleStatusIcons.put(BattleStatus.closedAndStarted.name().toLowerCase(), new ImageIcon(getClass().getResource("/img/icons/battle/closedandstarted.png")));
+    
+        // Player icons
+        playerStatusIcons = new HashMap<String, ImageIcon>();
+        playerStatusIcons.put(Boolean.toString(true), new ImageIcon(getClass().getResource("/img/icons/player/in-game.png")));
+        playerStatusIcons.put(Boolean.toString(false), new ImageIcon(getClass().getResource("/img/icons/player/available.png")));
     }
 
     public ImageIcon getCountryIcon(String countryISOCode) {
@@ -89,6 +95,10 @@ public class LobbyIcons {
 
     public Map<String, ImageIcon> getStatusIcons() {
         return statusIcons;
+    }
+
+    public Map<String, ImageIcon> getPlayerStatusIcons() {
+        return playerStatusIcons;
     }
 
     public Map<String, ImageIcon> getBattleStatusIcons() {

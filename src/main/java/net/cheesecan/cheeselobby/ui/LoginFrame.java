@@ -11,8 +11,7 @@
  *  distributed under the License is distributed on an "AS IS" BASIS,
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *  under the License.
+ *  limitations under the License. *  under the License.
  */
 
 /*
@@ -22,14 +21,19 @@
  */
 package net.cheesecan.cheeselobby.ui;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BoxLayout;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -37,15 +41,19 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JEditorPane;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JProgressBar;
+import javax.swing.JTextPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingUtilities;
-import net.cheesecan.cheeselobby.ui.interfaces.LoginControllerFacade;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.rtf.RTFEditorKit;
 import net.cheesecan.cheeselobby.io.SettingsFile;
 import net.cheesecan.cheeselobby.ui.interfaces.LoginControllerFacade;
 import net.cheesecan.cheeselobby.lobby_connection.interfaces.LoginObserver;
@@ -69,13 +77,14 @@ public class LoginFrame extends JInternalFrame implements ActionListener, LoginO
         initComponents();
 
         // Compute size and location of login
-        int width = 700;
-        int height = 400;
-        setMinimumSize(new Dimension(width, height));
-        setSize(new Dimension(width, height));
+        // int width = 700;
+        // int height = 400;
+        //setMinimumSize(new Dimension(width, height));
+        //setSize(new Dimension(width, height));
+        pack();
         double x = Toolkit.getDefaultToolkit().getScreenSize().getWidth() / 2;
         double y = Toolkit.getDefaultToolkit().getScreenSize().getHeight() / 2;
-        setLocation((int) x - width / 2, (int) ((int) y - height / 1.3));
+        setLocation((int) x - getWidth() / 2, (int) ((int) y - getHeight() / 1.5));
 
         // Set icon
         setFrameIcon(new ImageIcon(getClass().getResource("/img/window/login.png")));
@@ -102,16 +111,17 @@ public class LoginFrame extends JInternalFrame implements ActionListener, LoginO
 
             @Override
             public void keyPressed(KeyEvent e) {
-                if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                     loginBtnActionPerformed(null);
                 }
             }
-
         };
         userNameBox.addKeyListener(enterPressAdapter);
         passwordField.addKeyListener(enterPressAdapter);
 
-        // TODO this class still needs two more buttons and functions: change password and register
+
+        // Register as a login observer with the login controller
+        loginController.registerAsLoginObserver(this);
     }
 
     /** This method is called from within the constructor to
@@ -132,10 +142,10 @@ public class LoginFrame extends JInternalFrame implements ActionListener, LoginO
         passwordField = new JPasswordField();
         rememberPasswordCheckbox = new JCheckBox();
         loginAutomaticallyCheckbox = new JCheckBox();
+        jButton1 = new JButton();
+        jLabel1 = new JLabel();
 
         getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.LINE_AXIS));
-
-        loginPanel.setPreferredSize(new Dimension(700,400));
 
         userNameBox.setEditable(true);
 
@@ -151,43 +161,75 @@ public class LoginFrame extends JInternalFrame implements ActionListener, LoginO
         loginAutomaticallyCheckbox.setText("Login automatically next time");
         loginAutomaticallyCheckbox.addActionListener(this);
 
+        jButton1.setText("Register");
+        jButton1.setToolTipText("Register a new account using the username and password you enter.");
+        jButton1.addActionListener(this);
+
+        jLabel1.setFont(new Font("Ubuntu", 1, 14)); // NOI18N
+        jLabel1.setForeground(new Color(0, 5, 255));
+        jLabel1.setText("Forgot your password?");
+
         GroupLayout loginPanelLayout = new GroupLayout(loginPanel);
         loginPanel.setLayout(loginPanelLayout);
         loginPanelLayout.setHorizontalGroup(
             loginPanelLayout.createParallelGroup(Alignment.LEADING)
-            .addComponent(progressBar, GroupLayout.DEFAULT_SIZE, 502, Short.MAX_VALUE)
             .addGroup(loginPanelLayout.createSequentialGroup()
-                .addGap(173, 173, 173)
+                .addContainerGap()
                 .addGroup(loginPanelLayout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(passwordLbl)
-                    .addComponent(usernameLbl))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(loginPanelLayout.createParallelGroup(Alignment.LEADING, false)
-                    .addComponent(userNameBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(loginBtn, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(passwordField)
-                    .addComponent(rememberPasswordCheckbox, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(loginAutomaticallyCheckbox, Alignment.TRAILING))
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(loginPanelLayout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addContainerGap(291, Short.MAX_VALUE))
+                    .addGroup(Alignment.TRAILING, loginPanelLayout.createParallelGroup(Alignment.LEADING)
+                        .addGroup(loginPanelLayout.createSequentialGroup()
+                            .addComponent(loginAutomaticallyCheckbox, GroupLayout.PREFERRED_SIZE, 432, GroupLayout.PREFERRED_SIZE)
+                            .addContainerGap())
+                        .addGroup(Alignment.TRAILING, loginPanelLayout.createParallelGroup(Alignment.LEADING)
+                            .addGroup(loginPanelLayout.createSequentialGroup()
+                                .addComponent(rememberPasswordCheckbox, GroupLayout.PREFERRED_SIZE, 432, GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap())
+                            .addGroup(Alignment.TRAILING, loginPanelLayout.createParallelGroup(Alignment.LEADING)
+                                .addGroup(loginPanelLayout.createSequentialGroup()
+                                    .addComponent(passwordField, GroupLayout.PREFERRED_SIZE, 432, GroupLayout.PREFERRED_SIZE)
+                                    .addContainerGap())
+                                .addGroup(Alignment.TRAILING, loginPanelLayout.createParallelGroup(Alignment.LEADING)
+                                    .addGroup(loginPanelLayout.createSequentialGroup()
+                                        .addComponent(userNameBox, GroupLayout.PREFERRED_SIZE, 432, GroupLayout.PREFERRED_SIZE)
+                                        .addContainerGap())
+                                    .addGroup(Alignment.TRAILING, loginPanelLayout.createSequentialGroup()
+                                        .addGroup(loginPanelLayout.createParallelGroup(Alignment.LEADING)
+                                            .addComponent(passwordLbl)
+                                            .addComponent(usernameLbl))
+                                        .addGap(369, 369, 369))))))
+                    .addGroup(loginPanelLayout.createSequentialGroup()
+                        .addComponent(loginBtn, GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .addGroup(loginPanelLayout.createSequentialGroup()
+                        .addComponent(jButton1, GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
+                        .addContainerGap())))
+            .addComponent(progressBar, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)
         );
         loginPanelLayout.setVerticalGroup(
             loginPanelLayout.createParallelGroup(Alignment.LEADING)
             .addGroup(loginPanelLayout.createSequentialGroup()
-                .addGap(139, 139, 139)
-                .addGroup(loginPanelLayout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(usernameLbl)
-                    .addComponent(userNameBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addContainerGap()
+                .addComponent(usernameLbl)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(loginPanelLayout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(passwordLbl)
-                    .addComponent(passwordField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addComponent(userNameBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addGap(7, 7, 7)
+                .addComponent(passwordLbl)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(passwordField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(rememberPasswordCheckbox)
                 .addGap(2, 2, 2)
                 .addComponent(loginAutomaticallyCheckbox)
+                .addGap(3, 3, 3)
+                .addComponent(jLabel1)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(loginBtn)
-                .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(jButton1)
+                .addPreferredGap(ComponentPlacement.RELATED, 7, Short.MAX_VALUE)
                 .addComponent(progressBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
         );
 
@@ -203,6 +245,9 @@ public class LoginFrame extends JInternalFrame implements ActionListener, LoginO
         else if (evt.getSource() == loginAutomaticallyCheckbox) {
             LoginFrame.this.loginAutomaticallyCheckboxActionPerformed(evt);
         }
+        else if (evt.getSource() == jButton1) {
+            LoginFrame.this.jButton1ActionPerformed(evt);
+        }
     }// </editor-fold>//GEN-END:initComponents
 
     private void loginBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_loginBtnActionPerformed
@@ -216,7 +261,14 @@ public class LoginFrame extends JInternalFrame implements ActionListener, LoginO
         } else {
             settings.setLoginAutomatically(false);
         }
+        // save setting immediately
+        settings.save();
     }//GEN-LAST:event_loginAutomaticallyCheckboxActionPerformed
+
+    private void jButton1ActionPerformed(ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        loginController.register(userNameBox.getSelectedItem().toString(), new String(passwordField.getPassword()));
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     private void login() {
         // Disable the login button
@@ -241,9 +293,6 @@ public class LoginFrame extends JInternalFrame implements ActionListener, LoginO
         // Save updates to settings
         settings.save();
 
-        // Register as a login observer with the login controller
-        loginController.registerAsLoginObserver(this);
-
         // Call login controller
         loginController.login(username, password);
 
@@ -266,14 +315,8 @@ public class LoginFrame extends JInternalFrame implements ActionListener, LoginO
                 // Finish progress bar
                 progressBar.setIndeterminate(false);
 
-                // Hide
-                setVisible(false);
-
                 // Notify our parent that we're closing
                 parent.loginFinished();
-
-                // Dispose, that is, deallocate all memory assigned for this frame
-                dispose();
             }
         });
     }
@@ -285,19 +328,21 @@ public class LoginFrame extends JInternalFrame implements ActionListener, LoginO
 
             @Override
             public void run() {
-                // Reset to default cursor
-                setCursor(Cursor.getPredefinedCursor(Cursor.getDefaultCursor().getType()));
-
-                // Disable progress bar
-                progressBar.setIndeterminate(false);
-
-                // Enable login button again
-                loginBtn.setEnabled(true);
+                resetLoginFrameState();
 
                 // Show error popup
                 JOptionPane.showMessageDialog(thisPtr, "Login failed: " + reason);
             }
         });
+    }
+
+    private void resetLoginFrameState() {
+        // Reset to default cursor
+        setCursor(Cursor.getPredefinedCursor(Cursor.getDefaultCursor().getType()));
+        // Disable progress bar
+        progressBar.setIndeterminate(false);
+        // Enable login button again
+        loginBtn.setEnabled(true);
     }
 
     @Override
@@ -306,22 +351,24 @@ public class LoginFrame extends JInternalFrame implements ActionListener, LoginO
 
             @Override
             public void run() {
-                throw new UnsupportedOperationException("Not supported yet.");
+                JOptionPane.showMessageDialog(null, "Registration was a success.", "Registration done", JOptionPane.INFORMATION_MESSAGE);
             }
         });
     }
 
     @Override
-    public void registrationFail(String reason) {
+    public void registrationFail(final String reason) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
             public void run() {
-                throw new UnsupportedOperationException("Not supported yet.");
+                JOptionPane.showMessageDialog(null, "Registration failed: " + reason, "Registration failed", JOptionPane.INFORMATION_MESSAGE);
             }
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JButton jButton1;
+    private JLabel jLabel1;
     private JCheckBox loginAutomaticallyCheckbox;
     private JButton loginBtn;
     private JPanel loginPanel;
@@ -332,4 +379,83 @@ public class LoginFrame extends JInternalFrame implements ActionListener, LoginO
     private JComboBox userNameBox;
     private JLabel usernameLbl;
     // End of variables declaration//GEN-END:variables
+
+    public void changeAccountName(String previousName, String newName) {
+        userNameBox.setSelectedItem(newName);
+        settings.save();
+    }
+
+    @Override
+    public void displayAgreement(final StringReader rtf) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                new AgreementDialog(rtf).setVisible(true);
+            }
+        });
+    }
+
+    private class AgreementDialog extends JDialog implements ActionListener {
+
+        private RTFEditorKit rtfEd;
+        private JEditorPane editor;
+        private JButton accept;
+        private JButton reject;
+
+        public AgreementDialog(StringReader rtf) {
+            setModal(true);
+            setTitle("Terms of use");
+
+            rtfEd = new RTFEditorKit();
+            editor = new JEditorPane();
+
+            editor.setEditable(false);
+            editor.setEditorKit(rtfEd);
+
+            try {
+                rtfEd.read(rtf, editor.getDocument(), 0);
+            } catch (IOException ex) {
+                Logger.getLogger(LoginFrame.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (BadLocationException ex) {
+                Logger.getLogger(LoginFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+            String str = null;
+            try {
+                str = editor.getDocument().getText(0, editor.getDocument().getLength());
+            } catch (BadLocationException ex) {
+                Logger.getLogger(LoginFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+            JTextPane text = new JTextPane();
+            text.setText(str);
+            text.setEditable(false);
+
+            accept = new JButton("Accept");
+            reject = new JButton("Reject");
+            accept.addActionListener(this);
+            reject.addActionListener(this);
+
+            add(text, BorderLayout.PAGE_START);
+            add(accept, BorderLayout.LINE_END);
+            add(reject, BorderLayout.LINE_START);
+
+            setSize(480, 575);
+            setLocation((int) Toolkit.getDefaultToolkit().getScreenSize().getWidth() / 2 - getWidth(),
+                    (int) Toolkit.getDefaultToolkit().getScreenSize().getHeight() / 2 - getHeight());
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == accept) {
+                loginController.acceptTOS();
+                login();
+            } else {//reject
+                loginController.disconnect();
+            }
+            resetLoginFrameState();
+            setVisible(false);
+        }
+    }
 }

@@ -10,11 +10,11 @@ import net.cheesecan.cheeselobby.session.SessionObject;
 public class ColumnComparator implements Comparator {
 
     private int column;
-    private boolean sortAscending;
+    private boolean sortDescending;
 
     public ColumnComparator(int column) {
         this.column = column;
-        this.sortAscending = true;
+        this.sortDescending = true;
     }
 
     @Override
@@ -42,7 +42,7 @@ public class ColumnComparator implements Comparator {
     }
 
     public int strCompare(String s1, String s2) {
-        if (!sortAscending) {
+        if (sortDescending) {
             return ((String) s1).compareTo((String) s2);
         } else {
             return ((String) s2).compareTo((String) s1);
@@ -50,6 +50,6 @@ public class ColumnComparator implements Comparator {
     }
 
     public void flip() {
-        sortAscending = !sortAscending;
+        sortDescending = !sortDescending;
     }
 }

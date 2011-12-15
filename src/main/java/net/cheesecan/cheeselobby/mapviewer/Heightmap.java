@@ -21,10 +21,10 @@ public class Heightmap {
     // Container
     private int[][] data;
     // Constants
-    public final static float tileSize = 1.5f;
-    public final static float heightScale = 0.45f;
+    public final static float tileSize = 1.4f;
+    public final static float heightScale = 0.25f;
 
-    public Heightmap(BufferedImage buf, BufferedImage heightmap, BufferedImage minimap) throws IOException {
+    public Heightmap(BufferedImage buf, BufferedImage heightmap, BufferedImage minimap, BufferedImage metalmap) throws IOException {
         Raster r = buf.getData();
         data = new int[buf.getWidth()][buf.getHeight()];
         for (int y = 0; y < buf.getHeight(); y++) {
@@ -38,10 +38,11 @@ public class Heightmap {
         // Load textures
         heightmapTexture = BufferedImageUtil.getTexture("", heightmap);
         minimapTexture = BufferedImageUtil.getTexture("", minimap);
-        metalmapTexture = null;
+        metalmapTexture = BufferedImageUtil.getTexture("", metalmap);
 
-        // Set active texture
+        // Set default active texture
         activeTexture = minimapTexture;
+        //activeTexture = heightmapTexture;
     }
 
     /**
@@ -49,10 +50,15 @@ public class Heightmap {
      * @param name valid choices are 'height' and 'minimap'
      */
     public void setActiveTexture(String name) {
-        if (name.equals("height")) {
+        if (name.equals("heightmap")) {
             activeTexture = heightmapTexture;
+            activeTexture.bind();
         } else if (name.equals("minimap")) {
             activeTexture = minimapTexture;
+            activeTexture.bind();
+        } else if (name.equals("metalmap")) {
+            activeTexture = metalmapTexture;
+            activeTexture.bind();
         }
     }
 
@@ -65,16 +71,10 @@ public class Heightmap {
         activeTexture.bind();
         glBegin(GL_QUADS);
 
-        //glColor3d(1, 1, 1);
-        // Random r = new Random();
         int width = data[0].length;
         int height = data.length;
         for (int y = 0; y < width - 1; y++) {
             for (int x = 0; x < height - 1; x++) {
-                // glColor3d(r.nextFloat(), r.nextFloat(), r.nextFloat());
-
-                // System.out.println(data[x][y] * heightScale);
-
                 glTexCoord2f((float) x / width, (float) y / height);
                 glVertex3f(x * tileSize, y * tileSize, data[x][y] * heightScale);
 

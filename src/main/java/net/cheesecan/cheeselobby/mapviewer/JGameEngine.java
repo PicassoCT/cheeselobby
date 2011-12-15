@@ -19,21 +19,23 @@ public class JGameEngine extends Thread {
     // Constants
 
     private final String title = "Preview";
-    public final static int screenWidth = 384;
-    public final static int screenHeight = 384;
     // Fields
     private MapPreview game;
-    private boolean wireFrame = false;
+    // private boolean wireFrame = false;
     private boolean paused = false;
-    private boolean mouseIsInsideWindow = true;
+    private boolean mouseIsInsideWindow = false;
     // Tasks
     final Queue<Runnable> tasks;
-
+    // 
+    private final int screenHeight, screenWidth;
+    
     /**
      * Public constructor.
      * Not much is done here because creation must happen on its own thread after invoking start() because of GL-Context.
      */
-    public JGameEngine() {
+    public JGameEngine(int width, int height) {
+        screenHeight=height;
+        screenWidth=width;
         tasks = new LinkedBlockingQueue<Runnable>();
     }
 
@@ -58,7 +60,9 @@ public class JGameEngine extends Thread {
      * @throws LWJGLException
      */
     private void initDisplay() throws LWJGLException {
+        System.out.println("Loading LWJGL natives.");
         Display.setParent(GraphicsPanel.canvas);
+        System.out.println("Loading LWJGL natives was successful.");
 
         Display.setDisplayMode(new DisplayMode(screenWidth, screenHeight));
         Display.setTitle(title);
@@ -94,6 +98,7 @@ public class JGameEngine extends Thread {
             Keyboard.create();
         } catch (LWJGLException ex) {
             Logger.getLogger(JGameEngine.class.getName()).log(Level.SEVERE, null, ex);
+            System.exit(1);
         }
         System.out.println("Initialized input.");
     }
@@ -113,6 +118,7 @@ public class JGameEngine extends Thread {
 
         } catch (LWJGLException ex) {
             Logger.getLogger(JGameEngine.class.getName()).log(Level.SEVERE, null, ex);
+            System.exit(1);
         }
         System.out.println("Initialized OpenGL.");
     }
@@ -121,71 +127,81 @@ public class JGameEngine extends Thread {
      * Processes all user input.
      */
     private void processInput() {
+        /*
         if (Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) {
-            System.out.println("Test");
-            System.exit(0);
+        System.out.println("Test");
+        System.exit(0);
         }
         if (Keyboard.isKeyDown(Keyboard.KEY_RCONTROL)) {
-            System.out.println(game.camrotation);
-            if (Keyboard.isKeyDown(Keyboard.KEY_LEFT)) {
-                game.camrotation = (game.camrotation + 1) % 360;
-            }
-            if (Keyboard.isKeyDown(Keyboard.KEY_RIGHT)) {
-                game.camrotation = (game.camrotation - 1) % 360;
-            }
-        }
-
-        if (Keyboard.isKeyDown(Keyboard.KEY_UP)) {
-            game.camy -= 10;
-        }
-        if (Keyboard.isKeyDown(Keyboard.KEY_DOWN)) {
-            game.camy += 10;
-        }
+        System.out.println(game.camrotation);
         if (Keyboard.isKeyDown(Keyboard.KEY_LEFT)) {
-            game.camx += 10;
+        game.camrotation = (game.camrotation + 1) % 360;
         }
         if (Keyboard.isKeyDown(Keyboard.KEY_RIGHT)) {
-            game.camx -= 10;
+        game.camrotation = (game.camrotation - 1) % 360;
+        }
+        }
+        
+        if (Keyboard.isKeyDown(Keyboard.KEY_UP)) {
+        game.camy -= 10;
+        }
+        if (Keyboard.isKeyDown(Keyboard.KEY_DOWN)) {
+        game.camy += 10;
+        }
+        if (Keyboard.isKeyDown(Keyboard.KEY_LEFT)) {
+        game.camx += 10;
+        }
+        if (Keyboard.isKeyDown(Keyboard.KEY_RIGHT)) {
+        game.camx -= 10;
         }
         if (Keyboard.isKeyDown(Keyboard.KEY_W)) {
-            if (!wireFrame) {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                wireFrame = true;
-            } else {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                wireFrame = false;
-            }
+        if (!wireFrame) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        wireFrame = true;
+        } else {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        wireFrame = false;
         }
+        }*/
 
         // If cursor is in the display window
         if (mouseIsInsideWindow) {
             // If mouse is on right edge
-            if (Mouse.getX() > screenWidth * 0.8) {
-                game.camx--;
-            }
-            // If mouse is on left edge
-            if (Mouse.getX() < screenWidth * 0.2) {
-                game.camx++;
-            }
-            // If mouse is on bottom edge
-            if (Mouse.getY() < screenHeight * 0.2) {
-                game.camy++;
-            }
-            // If mouse is on top edge
-            if (Mouse.getY() > screenHeight * 0.8) {
-                game.camy--;
+            if(Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) && Mouse.isButtonDown(0)) { // lctrl and left button pressed
+                if (Mouse.getX() > screenWidth * 0.8) {
+                    game.camx--;
+                }
+                // If mouse is on left edge
+                else if (Mouse.getX() < screenWidth * 0.2) {
+                    game.camx++;
+                }
+                // If mouse is on bottom edge
+                else if (Mouse.getY() < screenHeight * 0.2) {
+                    game.camy++;
+                }
+                // If mouse is on top edge
+                else if (Mouse.getY() > screenHeight * 0.8) {
+                    game.camy--;
+                } 
+            } else if(Mouse.isButtonDown(1)) { // right mouse button
+                game.camrotation+=0.5; // rotate camera
+            } else if(Mouse.isButtonDown(0)) { // left mouse button
+                game.camrotation-=0.5; // rotate camera
             }
 
+            /*
             // Zoom
             int delta = Mouse.getDWheel();
 
             if (delta > 0) {
-                game.zoom -= 0.04;
+                game.zoom -= 0.44;
                 System.out.println("++");
             } else if (delta < 0) {
-                game.zoom += 0.04;
+                game.zoom += 0.44;
                 System.out.println("--");
-            }
+            }*/
+            
+           // System.out.println(game.camx+","+game.camy);
         }
     }
 
@@ -193,18 +209,22 @@ public class JGameEngine extends Thread {
         this.paused = paused;
     }
 
+    @Override
     public void run() {
+        System.out.println("Launching 3D Previewer engine.");
         // Initialize when thread starts
         initGL();
         initInput();
         initGame();
+        System.out.println("Done launching 3D Previewer engine.");
 
         // Start game loop
         while (true) {
             // Execute tasks
             while (!tasks.isEmpty()) {
-                tasks.peek().run();
-                tasks.remove();
+                Runnable peek = tasks.peek();
+                peek.run();
+                tasks.remove(peek);
             }
 
             // Pause thread by letting it sleep 3s at a time
@@ -226,6 +246,6 @@ public class JGameEngine extends Thread {
     private void doCleanup() {
         Keyboard.destroy();
         Display.destroy();
-        System.out.println("Cleaned up.");
+        System.out.println("Cleaned up 3D previewer.");
     }
 }
