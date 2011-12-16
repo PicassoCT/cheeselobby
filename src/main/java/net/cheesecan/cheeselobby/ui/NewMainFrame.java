@@ -17,6 +17,7 @@
 package net.cheesecan.cheeselobby.ui;
 
 import java.awt.Desktop;
+import java.awt.HeadlessException;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -59,6 +60,7 @@ public class NewMainFrame extends JFrame implements Disconnectable {
     private String title;
     private JPopupMenu popupMenu;
     private JMenuItem settingsMenu;
+    private JMenuItem downloadMenu;
     private JMenuItem helpMenu;
     private JMenuItem aboutMenu;
     private JMenuItem logoutMenu;
@@ -73,6 +75,7 @@ public class NewMainFrame extends JFrame implements Disconnectable {
     private BattleListFrame battle;
     private BattleRoomFrame battleRoom;
     private SettingsDialog settingsDialog;
+    private DownloaderFrame downloader;
 
     public static void main(String[] args) {
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -148,15 +151,17 @@ public class NewMainFrame extends JFrame implements Disconnectable {
     private void initPopupMenu() {
         final JPopupMenu menu = new JPopupMenu();
         settingsMenu = new JMenuItem("Settings");
+        downloadMenu = new JMenuItem("Downloader");
         helpMenu = new JMenuItem("Help");
         aboutMenu = new JMenuItem("About");
         logoutMenu = new JMenuItem("Logout");
         exitMenu = new JMenuItem("Exit");
         menu.add(settingsMenu);
+        menu.add(downloadMenu);
         menu.addSeparator();
         menu.add(helpMenu);
         menu.add(logoutMenu);
-         menu.add(aboutMenu);
+        menu.add(aboutMenu);
         menu.add(exitMenu);
         logoutMenu.setVisible(false);
 
@@ -203,32 +208,47 @@ public class NewMainFrame extends JFrame implements Disconnectable {
                 if (e.getSource() == settingsMenu) {
                     settingsDialog.showAtCenterOfScreen();
                 } else if (e.getSource() == helpMenu) {
-                    try {
-                        try {
-                            Desktop.getDesktop().browse(new URI("http://jahwag.github.com/cheeselobby/project-info.html"));
-                        } catch (IOException ex) {
-                            Logger.getLogger(NewMainFrame.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    } catch (URISyntaxException ex) {
-                        Logger.getLogger(NewMainFrame.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+                    helpMenuActionPerformed();
                 } else if (e.getSource() == aboutMenu) {
                     JOptionPane.showMessageDialog(thisPtr, title + "\n" + "A Java multiplayer lobby client for Spring.\n" + "Developed by Jahziah Wagner 2011.");
                 } else if (e.getSource() == exitMenu) {
-                    int retVal = JOptionPane.showConfirmDialog(thisPtr, "Are you sure you wish to exit?", "Confirm", JOptionPane.YES_NO_OPTION);
-                    if (retVal == JOptionPane.YES_OPTION) {
-                        System.exit(0);
-                    }
+                    exitMenuActionPerformed();
                 } else if (e.getSource() == logoutMenu) {
-                    int res = JOptionPane.showConfirmDialog(null, "Are you sure you wish to disconnect?", "Disconnect", JOptionPane.YES_NO_OPTION);
-                    if (res == JOptionPane.YES_OPTION) {
-                        _disconnect(null, null, null);
+                    logoutMenuActionPerformed();
+                } else if(e.getSource() == downloadMenu) {
+                    downloader.setVisible(true);
+                }
+            }
+
+            private void logoutMenuActionPerformed() throws HeadlessException {
+                int res = JOptionPane.showConfirmDialog(null, "Are you sure you wish to disconnect?", "Disconnect", JOptionPane.YES_NO_OPTION);
+                if (res == JOptionPane.YES_OPTION) {
+                    _disconnect(null, null, null);
+                }
+            }
+
+            private void exitMenuActionPerformed() throws HeadlessException {
+                int retVal = JOptionPane.showConfirmDialog(thisPtr, "Are you sure you wish to exit?", "Confirm", JOptionPane.YES_NO_OPTION);
+                if (retVal == JOptionPane.YES_OPTION) {
+                    System.exit(0);
+                }
+            }
+
+            private void helpMenuActionPerformed() {
+                try {
+                    try {
+                        Desktop.getDesktop().browse(new URI("http://jahwag.github.com/cheeselobby/project-info.html"));
+                    } catch (IOException ex) {
+                        Logger.getLogger(NewMainFrame.class.getName()).log(Level.SEVERE, null, ex);
                     }
+                } catch (URISyntaxException ex) {
+                    Logger.getLogger(NewMainFrame.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         };
 
         settingsMenu.addActionListener(menuListener);
+        downloadMenu.addActionListener(menuListener);
         helpMenu.addActionListener(menuListener);
         aboutMenu.addActionListener(menuListener);
         logoutMenu.addActionListener(menuListener);
@@ -324,6 +344,9 @@ public class NewMainFrame extends JFrame implements Disconnectable {
         // Initialize battleRoom
         battleRoom = new BattleRoomFrame(sessionController, settings, unitSync);
         bg.add(battleRoom);
+        // Initialize downloader
+        downloader = new DownloaderFrame(settings);
+        bg.add(downloader);
     }
 
     private void disposeOfWindow(JInternalFrame window) {
@@ -351,6 +374,7 @@ public class NewMainFrame extends JFrame implements Disconnectable {
         disposeOfWindow(chat);
         disposeOfWindow(battle);
         disposeOfWindow(battleRoom);
+        disposeOfWindow(downloader);
 
         // Repaint
         repaint();

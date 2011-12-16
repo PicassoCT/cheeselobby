@@ -151,7 +151,7 @@ public class BattleRoomFrame extends JInternalFrame implements BattleObserver, A
         setIconifiable(true);
         setMaximizable(true);
         setResizable(true);
-        setTitle("Battle room");
+       // setTitle("Battle room");
     }
 
     private void registerAsObserver() {
