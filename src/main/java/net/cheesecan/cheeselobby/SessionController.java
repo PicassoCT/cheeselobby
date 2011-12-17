@@ -20,7 +20,7 @@ import net.cheesecan.cheeselobby.session.ClientInfo;
 import net.cheesecan.cheeselobby.session.Battle;
 import net.cheesecan.cheeselobby.lobby_connection.interfaces.BattleListObserver;
 import net.cheesecan.cheeselobby.lobby_connection.interfaces.ChatObserver;
-import net.cheesecan.cheeselobby.lobby_connection.interfaces.BattleObserver;
+import net.cheesecan.cheeselobby.lobby_connection.interfaces.BattleRoomObserver;
 import net.cheesecan.cheeselobby.io.ScriptFile;
 import net.cheesecan.cheeselobby.io.SettingsFile;
 import net.cheesecan.cheeselobby.ui.interfaces.BattleListControllerFacade;
@@ -67,7 +67,7 @@ public class SessionController extends Thread implements BattleListControllerFac
     private LoginObserver loginObserver;
     private ChatObserver chatObserver;
     private BattleListObserver battleListObserver;
-    private BattleObserver battleObserver;
+    private BattleRoomObserver battleObserver;
     private Disconnectable mainFrame;
     // Connections
     private Socket socket;
@@ -863,7 +863,7 @@ public class SessionController extends Thread implements BattleListControllerFac
     }
 
     @Override
-    public void registerAsBattleObserver(BattleObserver battleObserver) {
+    public void registerAsBattleObserver(BattleRoomObserver battleObserver) {
         this.battleObserver = battleObserver;
     }
 

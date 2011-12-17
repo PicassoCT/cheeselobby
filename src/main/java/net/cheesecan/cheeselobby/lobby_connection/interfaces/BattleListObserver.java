@@ -18,12 +18,13 @@
 package net.cheesecan.cheeselobby.lobby_connection.interfaces;
 
 import net.cheesecan.cheeselobby.session.Battle;
+import net.cheesecan.cheeselobby.ui.interfaces.BattleObserver;
 
 /**
  *
  * @author jahziah
  */
-public interface BattleListObserver {
+public interface BattleListObserver extends BattleObserver {
 
       /**
      * Add battle to a battle table

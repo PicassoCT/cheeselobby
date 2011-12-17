@@ -38,9 +38,9 @@ import net.cheesecan.cheeselobby.ui.components.IconRenderer;
 import net.cheesecan.cheeselobby.ui.components.PasswordIconRenderer;
 import net.cheesecan.cheeselobby.session.Battle;
 import net.cheesecan.cheeselobby.session.User;
+import net.cheesecan.cheeselobby.ui.components.MinimapDisplay;
 import net.cheesecan.cheeselobby.ui.interfaces.BattleListControllerFacade;
 import net.cheesecan.cheeselobby.ui.interfaces.DownloaderFacade;
-import net.cheesecan.cheeselobby.ui.interfaces.RefreshableObserver;
 import net.cheesecan.cheeselobby.unitsync.UnitSyncForJava;
 import org.pushingpixels.substance.api.renderers.SubstanceDefaultTableCellRenderer.BooleanRenderer;
 
@@ -48,21 +48,19 @@ import org.pushingpixels.substance.api.renderers.SubstanceDefaultTableCellRender
  *
  * @author jahziah
  */
-public class BattleListFrame extends JInternalFrame implements ActionListener, BattleListObserver, RefreshableObserver {
-    private static final String MAP_MISSING = "/misc/missing128.png";
+public class BattleListFrame extends JInternalFrame implements ActionListener, BattleListObserver {
 
     private BattleListControllerFacade battleListController;
     private NewMainFrame parent;
-    private UnitSyncForJava unitSync;
-    private boolean mapMissing = false;
+    private UnitSyncForJava unitsync;
     private DownloaderFacade downloader;
 
     /** Creates new form BattleListFrame */
     public BattleListFrame(BattleListControllerFacade battleController, NewMainFrame parent, UnitSyncForJava unitSync, DownloaderFacade downloader) {
-        this.downloader = downloader;
         this.battleListController = battleController;
         this.parent = parent;
-        this.unitSync = unitSync;
+        this.unitsync = unitSync;
+        this.downloader = downloader;
 
         initComponents();
         postInitComponents();
@@ -79,40 +77,13 @@ public class BattleListFrame extends JInternalFrame implements ActionListener, B
         // Set icon
         setFrameIcon(new ImageIcon(getClass().getResource("/img/window/blist.png")));
 
-        // Set map review label size
-        mapReviewLabel.setSize(new Dimension(128, 128));
-        mapReviewLabel.setMinimumSize(new Dimension(128, 128));
-        mapReviewLabel.setPreferredSize(new Dimension(128, 128));
-        mapReviewLabel.setMaximumSize(new Dimension(128, 128));
-        mapReviewLabel.setHorizontalAlignment(SwingConstants.LEFT);
-        mapReviewLabel.setVerticalAlignment(SwingConstants.BOTTOM);
-
         this.addInternalFrameListener(new InternalFrameAdapter() {
+
             @Override
             public void internalFrameDeiconified(InternalFrameEvent e) {
                 reveal();
             }
         });
-        
-        mapReviewLabel.addMouseListener(new MouseAdapter() {
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                clickMapDownload();
-            }
-        });
-    }
-    
-    private void clickMapDownload() {
-        if(mapMissing) {
-            Battle currentlySelectedBattle = getCurrentlySelectedBattle();
-            int downloadMap = JOptionPane.showConfirmDialog(this, "Would you like to download this map?", 
-                    "Download '" + currentlySelectedBattle.getMapName() +"' ?", JOptionPane.YES_NO_OPTION);
-            if(downloadMap == JOptionPane.YES_OPTION) {
-                downloader.downloadMap(currentlySelectedBattle.getMapName(), this); // tell downloader to download said map
-            }
-        }
     }
 
     private void initBattlesTable() {
@@ -146,31 +117,30 @@ public class BattleListFrame extends JInternalFrame implements ActionListener, B
             private void performLeftMouseClickAction(MouseEvent e) {
                 // Get value at row,col
                 Battle b = getCurrentlySelectedBattle();
-                
-                if(b == null) {
+
+                if (b == null) {
                     return;
                 }
-                
+
                 int battleId = b.getBattleId();
 
                 // Set data in battle view model
                 battleViewModel.setData(battleListController.getUsersInBattle(battleId));
 
                 // Set map preview
-                setMapPreview(b.getMapHash(), b.getMapName());
+                setMapPreview(b.getMapHash());
 
                 // Set columns
                 setColumnModelBattleView();
             }
 
             private void performRightMouseClickAction(MouseEvent e) {
-                throw new UnsupportedOperationException("Not yet implemented");
             }
         });
         // TODO Add listener for keys (up/down)
 
     }
-    
+
     private Battle getCurrentlySelectedBattle() {
         // Get battle id
         int row = battlesTable.getSelectedRow();
@@ -198,9 +168,9 @@ public class BattleListFrame extends JInternalFrame implements ActionListener, B
     private void setLocation() {
         // Set location
         pack();
-       // double x = Toolkit.getDefaultToolkit().getScreenSize().getWidth() / 2;
+        // double x = Toolkit.getDefaultToolkit().getScreenSize().getWidth() / 2;
         //double y = Toolkit.getDefaultToolkit().getScreenSize().getHeight() / 2;
-        setLocation(0,0);
+        setLocation(0, 0);
         setResizable(true);
     }
 
@@ -217,17 +187,16 @@ public class BattleListFrame extends JInternalFrame implements ActionListener, B
         battlesTable.getColumnModel().getColumn(1).setWidth(32);
         battlesTable.getColumnModel().getColumn(4).setWidth(23);
 
-       // battlesTable.getColumnModel().getColumn(7).setMaxWidth(32);
-       // battlesTable.getColumnModel().getColumn(7).setWidth(32);
+        // battlesTable.getColumnModel().getColumn(7).setMaxWidth(32);
+        // battlesTable.getColumnModel().getColumn(7).setWidth(32);
         //battlesTable.getColumnModel().getColumn(8).setMaxWidth(32);
         //battlesTable.getColumnModel().getColumn(8).setWidth(32);
         battlesTable.setRowHeight(42);
 
         // If not yet deiconified
-        if(isIcon()) {
+        if (isIcon()) {
             return;
-        }
-        else { // Else pack tables
+        } else { // Else pack tables
             battlesTable.pack(TablePacker.ALL_ROWS, false);
         }
     }
@@ -248,18 +217,8 @@ public class BattleListFrame extends JInternalFrame implements ActionListener, B
         setLocation();
     }
 
-    private void setMapPreview(int mapChecksum, String mapName) {
-        // TODO add caching to improve performance
-        try {
-            mapReviewLabel.setIcon(new ImageIcon(unitSync.getMinimap(unitSync.mapChecksumToArchiveName(mapChecksum), 3)));
-            mapMissing = false;
-            mapReviewLabel.setToolTipText(mapName);
-        } catch (IOException ex) {
-            // Does not have said map
-            mapReviewLabel.setIcon(new ImageIcon(getClass().getResource(MAP_MISSING)));
-            mapMissing = true;
-            mapReviewLabel.setToolTipText("Click to download");
-        }
+    private void setMapPreview(int mapChecksum) {
+        ((MinimapDisplay) mapReviewLabel).setMinimap(mapChecksum);
     }
 
     private void _addBattle(Battle battle) {
@@ -302,7 +261,7 @@ public class BattleListFrame extends JInternalFrame implements ActionListener, B
         jPanel1 = new JPanel();
         battlesScrollPane = new JScrollPane();
         jPanel2 = new JPanel();
-        mapReviewLabel = new JLabel();
+        mapReviewLabel = new MinimapDisplay(downloader, this, unitsync, 128, 128);
         joinButton = new JButton();
         usersScrollPane = new JScrollPane();
 
@@ -312,11 +271,6 @@ public class BattleListFrame extends JInternalFrame implements ActionListener, B
 
         battlesScrollPane.setBorder(BorderFactory.createTitledBorder("Battle list"));
         battlesScrollPane.setPreferredSize(new Dimension(256, 256));
-
-        mapReviewLabel.setBorder(BorderFactory.createLineBorder(new Color(0, 0, 0)));
-        mapReviewLabel.setMaximumSize(new Dimension(128, 128));
-        mapReviewLabel.setMinimumSize(new Dimension(128, 128));
-        mapReviewLabel.setPreferredSize(new Dimension(128, 128));
 
         joinButton.setText("Join");
         joinButton.addActionListener(this);
@@ -351,7 +305,7 @@ public class BattleListFrame extends JInternalFrame implements ActionListener, B
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(Alignment.LEADING)
             .addGroup(Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addComponent(usersScrollPane, GroupLayout.DEFAULT_SIZE, 1148, Short.MAX_VALUE)
+                .addComponent(usersScrollPane, GroupLayout.DEFAULT_SIZE, 1155, Short.MAX_VALUE)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(jPanel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
             .addComponent(battlesScrollPane, GroupLayout.DEFAULT_SIZE, 1335, Short.MAX_VALUE)
@@ -363,7 +317,7 @@ public class BattleListFrame extends JInternalFrame implements ActionListener, B
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(jPanel2, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(usersScrollPane, GroupLayout.DEFAULT_SIZE, 327, Short.MAX_VALUE)))
+                    .addComponent(usersScrollPane, GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE)))
         );
 
         getContentPane().add(jPanel1, "card2");
@@ -455,12 +409,17 @@ public class BattleListFrame extends JInternalFrame implements ActionListener, B
     }
 
     public void fireRefreshFromDownloader() {
-        //int cur = battlesTable.getSelectedRow();
-        
-        // Re-select
-        //battlesTable.setRowSelectionInterval(cur, cur);
-        battlesTable.validate();
-        battlesTable.repaint();
-        toFront();
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                battlesTable.validate();
+                battlesTable.repaint();
+                toFront();
+            }
+        });
+    }
+
+    public Battle getRelevantBattle() {
+        return getCurrentlySelectedBattle();
     }
 }

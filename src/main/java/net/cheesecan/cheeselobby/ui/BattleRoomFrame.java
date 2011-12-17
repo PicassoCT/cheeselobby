@@ -29,9 +29,12 @@ import java.awt.HeadlessException;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Locale;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -56,7 +59,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.text.DefaultCaret;
-import net.cheesecan.cheeselobby.lobby_connection.interfaces.BattleObserver;
+import net.cheesecan.cheeselobby.lobby_connection.interfaces.BattleRoomObserver;
 import net.cheesecan.cheeselobby.io.SettingsFile;
 import net.cheesecan.cheeselobby.session.ChatMessageType;
 import net.cheesecan.cheeselobby.tables.BattleUserTableModel;
@@ -69,6 +72,8 @@ import net.cheesecan.cheeselobby.session.User;
 import net.cheesecan.cheeselobby.session.User.GameStatus;
 import net.cheesecan.cheeselobby.ui.interfaces.BattleControllerFacade;
 import net.cheesecan.cheeselobby.mapviewer.GraphicsPanel;
+import net.cheesecan.cheeselobby.ui.components.MinimapDisplay;
+import net.cheesecan.cheeselobby.ui.interfaces.DownloaderFacade;
 import net.cheesecan.cheeselobby.unitsync.UnitSyncForJava;
 import org.pushingpixels.substance.api.renderers.SubstanceDefaultTableCellRenderer.BooleanRenderer;
 
@@ -76,11 +81,12 @@ import org.pushingpixels.substance.api.renderers.SubstanceDefaultTableCellRender
  *  This class needs refactoring.
  * @author jahziah
  */
-public class BattleRoomFrame extends JInternalFrame implements BattleObserver, ActionListener {
-
+public class BattleRoomFrame extends JInternalFrame implements BattleRoomObserver, ActionListener {
     // Objects
+
     private BattleControllerFacade battleController;
     private SettingsFile settings;
+    private DownloaderFacade downloader;
     // Panels
     private GraphicsPanel mapViewerPanel;
     // UnitSync!
@@ -95,12 +101,13 @@ public class BattleRoomFrame extends JInternalFrame implements BattleObserver, A
     private long autoUnspecAttemptInterval = 2000;
 
     /** Creates new form BattleRoomFrame */
-    public BattleRoomFrame(BattleControllerFacade battleController, SettingsFile settings, UnitSyncForJava unitsync) {
+    public BattleRoomFrame(BattleControllerFacade battleController, DownloaderFacade downloader, SettingsFile settings, UnitSyncForJava unitsync) {
         initComponents();
 
         this.unitSync = unitsync;
         this.battleController = battleController;
         this.settings = settings;
+        this.downloader = downloader;
 
         initComponents();
         postInitComponents();
@@ -151,7 +158,7 @@ public class BattleRoomFrame extends JInternalFrame implements BattleObserver, A
         setIconifiable(true);
         setMaximizable(true);
         setResizable(true);
-       // setTitle("Battle room");
+        // setTitle("Battle room");
     }
 
     private void registerAsObserver() {
@@ -180,25 +187,7 @@ public class BattleRoomFrame extends JInternalFrame implements BattleObserver, A
         initUserTable();
 
         // Load minimap
-        BufferedImage img = null;
-        try {
-            img = unitSync.getMinimap(unitSync.mapChecksumToArchiveName(battle.getMapHash()), 1);
-
-            // Resize
-            img = UnitSyncForJava.resize(img, 384, 384, BufferedImage.TYPE_USHORT_565_RGB);
-
-            // Display minimap
-            minimapLabel.setIcon(new ImageIcon(img));
-            minimapLabel.setToolTipText("");
-        } catch (IOException ex) {
-            System.err.println("Client did not have the map.");
-
-            // Display missing icon on minimap
-            minimapLabel.setIcon(new ImageIcon(getClass().getResource("/misc/missing.png")));
-            minimapLabel.setHorizontalAlignment(SwingConstants.CENTER);
-            minimapLabel.setVerticalAlignment(SwingConstants.CENTER);
-            minimapLabel.setToolTipText("You don't have this map.");
-        }
+        ((MinimapDisplay) minimapLabel).setMinimap(battle.getMapHash());
 
         // Make battle window visible
         reveal();
@@ -208,8 +197,9 @@ public class BattleRoomFrame extends JInternalFrame implements BattleObserver, A
 
         // Set default close operation to leave
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-        
+
         addInternalFrameListener(new InternalFrameAdapter() {
+
             @Override
             public void internalFrameClosing(InternalFrameEvent e) {
                 leave();
@@ -262,7 +252,7 @@ public class BattleRoomFrame extends JInternalFrame implements BattleObserver, A
             @Override
             public void actionPerformed(ActionEvent e) {
                 String title = mapViewerComboBox.getSelectedItem().toString();
-                
+
                 if (title.equals("Off")) {
                     if (!mapViewerPanel.engineIsUninitialized()) {
                         mapViewerPanel.hide();
@@ -324,7 +314,7 @@ public class BattleRoomFrame extends JInternalFrame implements BattleObserver, A
 
     private void leave() {
         System.out.println("Leaving battle.");
-        
+
         // Notify battleController we are leaving
         battleController.leaveBattle();
 
@@ -418,7 +408,7 @@ public class BattleRoomFrame extends JInternalFrame implements BattleObserver, A
         sendButton = new JButton();
         usersScrollPane = new JScrollPane();
         overviewTabbedPane = new JTabbedPane();
-        minimapLabel = new JLabel();
+        minimapLabel = new MinimapDisplay(downloader, this, unitSync, 384, 384);
         previewPanel = new JPanel();
         mapViewerComboBox = new JComboBox();
         mapSettings = new JPanel();
@@ -475,10 +465,10 @@ public class BattleRoomFrame extends JInternalFrame implements BattleObserver, A
                 .addGroup(rightPanelLayout.createParallelGroup(Alignment.LEADING)
                     .addGroup(rightPanelLayout.createSequentialGroup()
                         .addComponent(colorLabel)
-                        .addContainerGap(76, Short.MAX_VALUE))
+                        .addContainerGap(82, Short.MAX_VALUE))
                     .addGroup(rightPanelLayout.createSequentialGroup()
                         .addComponent(spectatorCheckbox)
-                        .addContainerGap(31, Short.MAX_VALUE))
+                        .addContainerGap(35, Short.MAX_VALUE))
                     .addGroup(rightPanelLayout.createSequentialGroup()
                         .addComponent(readyCheckBox, GroupLayout.PREFERRED_SIZE, 696, GroupLayout.PREFERRED_SIZE)
                         .addGap(71, 71, 71))
@@ -502,7 +492,7 @@ public class BattleRoomFrame extends JInternalFrame implements BattleObserver, A
                         .addContainerGap())
                     .addGroup(rightPanelLayout.createSequentialGroup()
                         .addComponent(autoUnspecButton)
-                        .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addContainerGap(13, Short.MAX_VALUE))))
         );
         rightPanelLayout.setVerticalGroup(
             rightPanelLayout.createParallelGroup(Alignment.LEADING)
@@ -529,7 +519,7 @@ public class BattleRoomFrame extends JInternalFrame implements BattleObserver, A
                 .addComponent(spectatorCheckbox)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(readyCheckBox)
-                .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
                 .addComponent(autoUnspecButton)
                 .addGap(18, 18, 18)
                 .addComponent(leaveButton)
@@ -566,7 +556,7 @@ public class BattleRoomFrame extends JInternalFrame implements BattleObserver, A
             leftPanelLayout.createParallelGroup(Alignment.LEADING)
             .addGroup(Alignment.TRAILING, leftPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(chatScrollPane, GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE)
+                .addComponent(chatScrollPane, GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(leftPanelLayout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(chatBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
@@ -579,8 +569,6 @@ public class BattleRoomFrame extends JInternalFrame implements BattleObserver, A
 
         overviewTabbedPane.setMinimumSize(new Dimension(384, 384));
         overviewTabbedPane.setPreferredSize(new Dimension(384, 384));
-
-        minimapLabel.setMinimumSize(new Dimension(256, 256));
         overviewTabbedPane.addTab("Minimap", minimapLabel);
 
         mapViewerComboBox.setModel(new DefaultComboBoxModel(new String[] { "Off", "Textured", "Heightmap", "Metalmap" }));
@@ -594,7 +582,7 @@ public class BattleRoomFrame extends JInternalFrame implements BattleObserver, A
         previewPanelLayout.setVerticalGroup(
             previewPanelLayout.createParallelGroup(Alignment.LEADING)
             .addGroup(Alignment.TRAILING, previewPanelLayout.createSequentialGroup()
-                .addContainerGap(321, Short.MAX_VALUE)
+                .addContainerGap(360, Short.MAX_VALUE)
                 .addComponent(mapViewerComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
         );
 
@@ -608,7 +596,7 @@ public class BattleRoomFrame extends JInternalFrame implements BattleObserver, A
         );
         mapSettingsLayout.setVerticalGroup(
             mapSettingsLayout.createParallelGroup(Alignment.LEADING)
-            .addGap(0, 349, Short.MAX_VALUE)
+            .addGap(0, 385, Short.MAX_VALUE)
         );
 
         overviewTabbedPane.addTab("Map information", mapSettings);
@@ -923,5 +911,21 @@ public class BattleRoomFrame extends JInternalFrame implements BattleObserver, A
 
         // Hide frame until we want to use it next time
         setVisible(false);
+    }
+
+    public Battle getRelevantBattle() {
+        return battle;
+    }
+
+    public void fireRefreshFromDownloader() {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                ((MinimapDisplay) minimapLabel).setMinimap(battle.getMapHash());
+                //minimapLabel.validate();
+                //minimapLabel.repaint();
+                toFront();
+            }
+        });
     }
 }

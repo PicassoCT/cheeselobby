@@ -65,7 +65,8 @@ public enum ServerMessage {
         AGREEMENT,
         AGREEMENTEND,
         ACCEPTED,
-        DENIED
+        DENIED,
+        ADDBOT
 
 
 

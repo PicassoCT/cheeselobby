@@ -10,7 +10,7 @@ import net.cheesecan.cheeselobby.ui.components.ProgressElement;
  * @author jahziah
  */
 public interface DownloaderFacade {
-    public void downloadMap(String name, RefreshableObserver observer);
+    public void downloadMap(String name, BattleObserver observer);
         
     Map<String, ProgressElement> progressContainer = Collections.synchronizedMap(new HashMap<String, ProgressElement>());
     

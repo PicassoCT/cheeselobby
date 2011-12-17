@@ -346,7 +346,7 @@ public class NewMainFrame extends JFrame implements Disconnectable {
         // Add battle room frame
         bg.add(battle);
         // Initialize battleRoom
-        battleRoom = new BattleRoomFrame(sessionController, settings, unitSync);
+        battleRoom = new BattleRoomFrame(sessionController, downloader, settings, unitSync);
         bg.add(battleRoom);
     }
 

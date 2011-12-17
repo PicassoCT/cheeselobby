@@ -16,7 +16,7 @@
  */
 package net.cheesecan.cheeselobby.ui.interfaces;
 
-import net.cheesecan.cheeselobby.lobby_connection.interfaces.BattleObserver;
+import net.cheesecan.cheeselobby.lobby_connection.interfaces.BattleRoomObserver;
 
 /**
  *
@@ -27,7 +27,7 @@ public interface BattleControllerFacade {
     /**
      * Register as a battle observer.
      */
-    public void registerAsBattleObserver(BattleObserver battleObserver);
+    public void registerAsBattleObserver(BattleRoomObserver battleObserver);
 
     /**
      * Say something inside current battle.

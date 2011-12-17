@@ -56,7 +56,7 @@ public class LobbyTable extends PackedTable {
     }
     
     private void selectedRowEvent(int index0) {
-        if(index0 == -1) {
+        if(index0 == -1 || index0 >= ((LobbyTableModel) getModel()).getData().size()){
             return;
         }
         lastRowSelectedHash = ((LobbyTableModel) getModel()).getData().get(index0).hashCode();

@@ -42,11 +42,11 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="colorLabel" min="-2" max="-2" attributes="1"/>
-                          <EmptySpace pref="76" max="32767" attributes="0"/>
+                          <EmptySpace pref="82" max="32767" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="spectatorCheckbox" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="33" max="32767" attributes="0"/>
+                          <EmptySpace pref="35" max="32767" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="readyCheckBox" min="-2" pref="696" max="-2" attributes="1"/>
@@ -54,22 +54,22 @@
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
                           <Group type="103" groupAlignment="1" attributes="0">
-                              <Component id="leaveButton" alignment="0" pref="92" max="32767" attributes="1"/>
-                              <Component id="startButton" alignment="1" pref="92" max="32767" attributes="1"/>
+                              <Component id="leaveButton" alignment="0" pref="88" max="32767" attributes="1"/>
+                              <Component id="startButton" alignment="1" pref="88" max="32767" attributes="1"/>
                           </Group>
                           <EmptySpace min="-2" pref="679" max="-2" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <Group type="103" groupAlignment="1" attributes="0">
-                              <Component id="colorButton" alignment="0" pref="82" max="32767" attributes="1"/>
-                              <Component id="teamComboBox" alignment="0" pref="82" max="32767" attributes="1"/>
-                              <Component id="teamLabel" alignment="0" pref="82" max="32767" attributes="0"/>
-                              <Component id="factionLabel" alignment="0" pref="82" max="32767" attributes="0"/>
+                              <Component id="colorButton" alignment="0" pref="78" max="32767" attributes="1"/>
+                              <Component id="teamComboBox" alignment="0" pref="78" max="32767" attributes="1"/>
+                              <Component id="teamLabel" alignment="0" pref="78" max="32767" attributes="0"/>
+                              <Component id="factionLabel" alignment="0" pref="78" max="32767" attributes="0"/>
                               <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
                                   <Component id="allyComboBox" alignment="0" max="32767" attributes="1"/>
                                   <Component id="factionComboBox" alignment="0" max="32767" attributes="1"/>
                               </Group>
-                              <Component id="allyLabel" alignment="0" pref="82" max="32767" attributes="0"/>
+                              <Component id="allyLabel" alignment="0" pref="78" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace min="-2" pref="592" max="-2" attributes="0"/>
                           <Component id="playerNumbersLabel" min="-2" pref="85" max="-2" attributes="0"/>
@@ -77,7 +77,7 @@
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="autoUnspecButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <EmptySpace pref="13" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -109,7 +109,7 @@
                   <Component id="spectatorCheckbox" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="readyCheckBox" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="32767" attributes="0"/>
+                  <EmptySpace pref="26" max="32767" attributes="0"/>
                   <Component id="autoUnspecButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Component id="leaveButton" min="-2" max="-2" attributes="0"/>
@@ -284,7 +284,7 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="1" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="chatScrollPane" pref="192" max="32767" attributes="0"/>
+                  <Component id="chatScrollPane" pref="199" max="32767" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="chatBox" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -352,11 +352,9 @@
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
       <SubComponents>
         <Component class="javax.swing.JLabel" name="minimapLabel">
-          <Properties>
-            <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[256, 256]"/>
-            </Property>
-          </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new MinimapDisplay(downloader, this, unitSync, 384, 384)"/>
+          </AuxValues>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Minimap">
@@ -377,13 +375,13 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="mapViewerComboBox" alignment="0" pref="368" max="32767" attributes="0"/>
+                  <Component id="mapViewerComboBox" alignment="0" pref="376" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
-                      <EmptySpace pref="311" max="32767" attributes="0"/>
+                      <EmptySpace pref="360" max="32767" attributes="0"/>
                       <Component id="mapViewerComboBox" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -416,12 +414,12 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <EmptySpace min="0" pref="368" max="32767" attributes="0"/>
+                  <EmptySpace min="0" pref="376" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <EmptySpace min="0" pref="341" max="32767" attributes="0"/>
+                  <EmptySpace min="0" pref="385" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
           </Layout>

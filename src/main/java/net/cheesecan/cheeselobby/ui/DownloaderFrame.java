@@ -39,6 +39,7 @@ import javax.swing.JButton;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
@@ -54,8 +55,8 @@ import net.cheesecan.cheeselobby.io.downloader.DownloadThread;
 import net.cheesecan.cheeselobby.io.downloader.DownloadThread.DownloadType;
 import net.cheesecan.cheeselobby.ui.components.DownloadOption;
 import net.cheesecan.cheeselobby.ui.components.ProgressElement;
+import net.cheesecan.cheeselobby.ui.interfaces.BattleObserver;
 import net.cheesecan.cheeselobby.ui.interfaces.DownloaderFacade;
-import net.cheesecan.cheeselobby.ui.interfaces.RefreshableObserver;
 import net.cheesecan.cheeselobby.unitsync.UnitSyncForJava;
 
 /**
@@ -79,9 +80,9 @@ public class DownloaderFrame extends JInternalFrame implements DownloaderFacade 
 
                 pe.setProgress(progress, bps);
                 refreshProgressPane(pe);
-                
-                if(progress == 100) {
-                    unitsync.refreshMapHashes(); 
+
+                if (progress == 100) {
+                    unitsync.refreshMapHashes();
                 }
             }
         });
@@ -173,7 +174,7 @@ public class DownloaderFrame extends JInternalFrame implements DownloaderFacade 
         });
     }
 
-    private void downloadFile(String name, String url, DownloadType type, RefreshableObserver observer) {
+    private void downloadFile(String name, String url, DownloadType type, BattleObserver observer) {
         if (type == DownloadType.Map) {
             new Thread(new DownloadThread(this, observer, name, url, DownloadType.Map)).start();
         } else {
@@ -378,10 +379,15 @@ public class DownloaderFrame extends JInternalFrame implements DownloaderFacade 
     private JScrollPane widgetsScrollPane;
     // End of variables declaration//GEN-END:variables
 
-    public void downloadMap(String name, RefreshableObserver observer) {
-        String url = DownloadThread.lookupResourceLocation(name);
-        downloadFile(name, url, DownloadType.Map, observer);
-        setVisible(true);
-        toFront();
+    public void downloadMap(final String name, final BattleObserver observer) {
+        new Thread(new Runnable() {
+            public void run() {
+                String url = DownloadThread.lookupResourceLocation(name); // spawn a new thread because this takes a while
+                downloadFile(name, url, DownloadType.Map, observer);
+                setVisible(true);
+                toFront();
+            }
+        }).start();
+        
     }
 }
