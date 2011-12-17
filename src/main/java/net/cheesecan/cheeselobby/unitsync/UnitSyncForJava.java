@@ -151,11 +151,25 @@ public class UnitSyncForJava {
     // Stores map name to index
     private HashMap<String, Integer> mapIndexes;    // mapname or archive name matched to its index as seen by unitsync
     private HashMap<Integer, String> mapChecksums;  // Every mapName/map archive name matched to map checksum
-
+    private boolean initialized = false;
+    
     public UnitSyncForJava() {
+    }
+    
+    /**
+     * Unfortunately unitsync is poorly coded and needs to be completely re-initialized to refresh.
+     * Devs claim this is not the case : http://springrts.com/mantis/view.php?id=2694
+     * But simple testing disagrees with them.
+     */
+    public void refreshMapHashes() {
+        if(initialized) {
+            UnitsyncLibrary.UnInit();
+        }
+        
         // Initialize unitsync
         UnitsyncLibrary.Init(false, 0);
-
+        initialized = true;
+        
         // Initialize map indexes
         mapIndexes = new HashMap<String, Integer>();
         mapChecksums = new HashMap<Integer, String>();
@@ -166,7 +180,7 @@ public class UnitSyncForJava {
             String archiveName = UnitsyncLibrary.GetMapName(i).getString(0);
             mapIndexes.put(archiveName, i);
             mapChecksums.put(UnitsyncLibrary.GetMapChecksumFromName(archiveName), archiveName);
-            //System.out.println(archiveName + " hashes to " + UnitsyncLibrary.GetMapChecksumFromName(archiveName));
+            System.out.println(archiveName + " hashes to " + UnitsyncLibrary.GetMapChecksumFromName(archiveName));
         }
     }
 

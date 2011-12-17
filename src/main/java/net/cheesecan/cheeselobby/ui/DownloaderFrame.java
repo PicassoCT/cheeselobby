@@ -50,18 +50,19 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import net.cheesecan.cheeselobby.io.SettingsFile;
-import net.cheesecan.cheeselobby.io.torrent.DownloadThread;
-import net.cheesecan.cheeselobby.io.torrent.DownloadThread.DownloadType;
+import net.cheesecan.cheeselobby.io.downloader.DownloadThread;
+import net.cheesecan.cheeselobby.io.downloader.DownloadThread.DownloadType;
 import net.cheesecan.cheeselobby.ui.components.DownloadOption;
 import net.cheesecan.cheeselobby.ui.components.ProgressElement;
-import net.cheesecan.cheeselobby.ui.interfaces.DownloadObserver;
 import net.cheesecan.cheeselobby.ui.interfaces.DownloaderFacade;
+import net.cheesecan.cheeselobby.ui.interfaces.RefreshableObserver;
+import net.cheesecan.cheeselobby.unitsync.UnitSyncForJava;
 
 /**
  *
  * @author jahziah
  */
-public class DownloaderFrame extends JInternalFrame implements DownloadObserver, DownloaderFacade {
+public class DownloaderFrame extends JInternalFrame implements DownloaderFacade {
 
     public void notifyDownloadProgress(final String filename, final int progress, final long bps) {
         final DownloaderFrame thisRef = this;
@@ -78,6 +79,10 @@ public class DownloaderFrame extends JInternalFrame implements DownloadObserver,
 
                 pe.setProgress(progress, bps);
                 refreshProgressPane(pe);
+                
+                if(progress == 100) {
+                    unitsync.refreshMapHashes(); 
+                }
             }
         });
     }
@@ -120,10 +125,12 @@ public class DownloaderFrame extends JInternalFrame implements DownloadObserver,
         }).start();
     }
     private SettingsFile settings;
+    private UnitSyncForJava unitsync;
 
     /** Creates new form DownloaderFrame */
-    public DownloaderFrame(SettingsFile settings) {
+    public DownloaderFrame(SettingsFile settings, UnitSyncForJava unitsync) {
         this.settings = settings;
+        this.unitsync = unitsync;
 
         initComponents();
         postInitComponents();
@@ -158,7 +165,7 @@ public class DownloaderFrame extends JInternalFrame implements DownloadObserver,
                 DownloadOption item = (DownloadOption) mapsList.getSelectedValue();
 
                 if (mapRadioButton.isSelected()) {
-                    downloadFile(item.toString(), item.getUrl(), DownloadType.Map);
+                    downloadFile(item.toString(), item.getUrl(), DownloadType.Map, null);
                 } else {
                     System.out.println("Widget and mod downloading not implemented");
                 }
@@ -166,9 +173,9 @@ public class DownloaderFrame extends JInternalFrame implements DownloadObserver,
         });
     }
 
-    private void downloadFile(String name, String url, DownloadType type) {
+    private void downloadFile(String name, String url, DownloadType type, RefreshableObserver observer) {
         if (type == DownloadType.Map) {
-            new Thread(new DownloadThread(this, name, url, DownloadType.Map)).start();
+            new Thread(new DownloadThread(this, observer, name, url, DownloadType.Map)).start();
         } else {
             return;
         }
@@ -371,9 +378,9 @@ public class DownloaderFrame extends JInternalFrame implements DownloadObserver,
     private JScrollPane widgetsScrollPane;
     // End of variables declaration//GEN-END:variables
 
-    public void downloadMap(String name) {
+    public void downloadMap(String name, RefreshableObserver observer) {
         String url = DownloadThread.lookupResourceLocation(name);
-        downloadFile(name, url, DownloadType.Map);
+        downloadFile(name, url, DownloadType.Map, observer);
         setVisible(true);
         toFront();
     }

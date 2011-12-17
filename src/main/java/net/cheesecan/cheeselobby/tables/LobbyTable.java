@@ -2,6 +2,7 @@ package net.cheesecan.cheeselobby.tables;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.List;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.JTableHeader;
@@ -49,11 +50,24 @@ public class LobbyTable extends PackedTable {
     public void tableChanged(TableModelEvent e) {
         int prevSelectedRow = this.getSelectedRow();
         
+        Object prev = null;
+        if(prevSelectedRow != -1) {
+            prev = ((LobbyTableModel) getModel()).getData().get(prevSelectedRow);
+        }
+        
         super.tableChanged(e);
         
         // When there is a fireTableStructureChanged event, we want to remember what row we had selected previously, if any
         if(prevSelectedRow != -1 && prevSelectedRow <= getRowCount()) {
-            setRowSelectionInterval(prevSelectedRow, prevSelectedRow);
+            int pHashCode = prev.hashCode(); // hash of previous row, used to select same row after the update as indexes have changed
+            
+            List data = ((LobbyTableModel) getModel()).getData();
+            for(int k=0; k<data.size(); k++) {
+                if(data.get(k).hashCode() == pHashCode) {
+                    setRowSelectionInterval(k, k);
+                    break;
+                }
+            }
         }
     }
 

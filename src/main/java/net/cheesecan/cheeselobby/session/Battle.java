@@ -259,4 +259,26 @@ public class Battle implements SessionObject {
             status = BattleStatus.open;
         }
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Battle other = (Battle) obj;
+        if (this.battleId != other.battleId) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 53 * hash + this.battleId;
+        return hash;
+    }
 }

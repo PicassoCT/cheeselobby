@@ -40,6 +40,7 @@ import net.cheesecan.cheeselobby.session.Battle;
 import net.cheesecan.cheeselobby.session.User;
 import net.cheesecan.cheeselobby.ui.interfaces.BattleListControllerFacade;
 import net.cheesecan.cheeselobby.ui.interfaces.DownloaderFacade;
+import net.cheesecan.cheeselobby.ui.interfaces.RefreshableObserver;
 import net.cheesecan.cheeselobby.unitsync.UnitSyncForJava;
 import org.pushingpixels.substance.api.renderers.SubstanceDefaultTableCellRenderer.BooleanRenderer;
 
@@ -47,7 +48,7 @@ import org.pushingpixels.substance.api.renderers.SubstanceDefaultTableCellRender
  *
  * @author jahziah
  */
-public class BattleListFrame extends JInternalFrame implements ActionListener, BattleListObserver {
+public class BattleListFrame extends JInternalFrame implements ActionListener, BattleListObserver, RefreshableObserver {
     private static final String MAP_MISSING = "/misc/missing128.png";
 
     private BattleListControllerFacade battleListController;
@@ -105,10 +106,11 @@ public class BattleListFrame extends JInternalFrame implements ActionListener, B
     
     private void clickMapDownload() {
         if(mapMissing) {
-            int downloadMap = JOptionPane.showConfirmDialog(this, "Would you like to download this map?", "Download missing map", JOptionPane.YES_NO_OPTION);
+            Battle currentlySelectedBattle = getCurrentlySelectedBattle();
+            int downloadMap = JOptionPane.showConfirmDialog(this, "Would you like to download this map?", 
+                    "Download '" + currentlySelectedBattle.getMapName() +"' ?", JOptionPane.YES_NO_OPTION);
             if(downloadMap == JOptionPane.YES_OPTION) {
-                Battle currentlySelectedBattle = getCurrentlySelectedBattle();
-                downloader.downloadMap(currentlySelectedBattle.getMapName()); // tell downloader to download said map
+                downloader.downloadMap(currentlySelectedBattle.getMapName(), this); // tell downloader to download said map
             }
         }
     }
@@ -250,13 +252,14 @@ public class BattleListFrame extends JInternalFrame implements ActionListener, B
         // TODO add caching to improve performance
         try {
             mapReviewLabel.setIcon(new ImageIcon(unitSync.getMinimap(unitSync.mapChecksumToArchiveName(mapChecksum), 3)));
-            mapMissing = true;
+            mapMissing = false;
+            mapReviewLabel.setToolTipText(mapName);
         } catch (IOException ex) {
             // Does not have said map
             mapReviewLabel.setIcon(new ImageIcon(getClass().getResource(MAP_MISSING)));
             mapMissing = true;
+            mapReviewLabel.setToolTipText("Click to download");
         }
-        mapReviewLabel.setToolTipText(mapName);
     }
 
     private void _addBattle(Battle battle) {
@@ -449,5 +452,15 @@ public class BattleListFrame extends JInternalFrame implements ActionListener, B
                 JOptionPane.showMessageDialog(null, reason, "Join battle failed", JOptionPane.INFORMATION_MESSAGE);
             }
         });
+    }
+
+    public void fireRefreshFromDownloader() {
+        //int cur = battlesTable.getSelectedRow();
+        
+        // Re-select
+        //battlesTable.setRowSelectionInterval(cur, cur);
+        battlesTable.validate();
+        battlesTable.repaint();
+        toFront();
     }
 }

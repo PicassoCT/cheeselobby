@@ -143,6 +143,7 @@ public class NewMainFrame extends JFrame implements Disconnectable {
         // Load unitsync
         Runtime.getRuntime().load(settings.getUnitSyncPath());
         unitSync = new UnitSyncForJava();
+        unitSync.refreshMapHashes();
     }
 
     /**
@@ -334,7 +335,7 @@ public class NewMainFrame extends JFrame implements Disconnectable {
 
     private void initializeWindows() {
          // Initialize downloader
-        downloader = new DownloaderFrame(settings);
+        downloader = new DownloaderFrame(settings, unitSync);
         bg.add(downloader);
         // Start chat frame
         chat = new ChatFrame(sessionController, settings);

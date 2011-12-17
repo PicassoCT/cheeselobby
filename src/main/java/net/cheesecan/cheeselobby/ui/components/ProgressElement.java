@@ -8,7 +8,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import net.cheesecan.cheeselobby.ui.interfaces.DownloadObserver;
+import net.cheesecan.cheeselobby.ui.interfaces.DownloaderFacade;
 
 /**
  *
@@ -19,12 +19,12 @@ public class ProgressElement {
     private JLabel label;
     private JProgressBar progress;
     private JButton closeButton;
-    private DownloadObserver parent;
+    private DownloaderFacade parent;
     private int position = -1;
     private JPanel panel;
     private String name;
 
-    public ProgressElement(String name, DownloadObserver parent) {
+    public ProgressElement(String name, DownloaderFacade parent) {
         this.parent = parent;
         this.name = name;
         
@@ -60,7 +60,7 @@ public class ProgressElement {
     }
 
     private void remove() {
-        DownloadObserver.progressContainer.remove(label.getName());
+        DownloaderFacade.progressContainer.remove(label.getName());
         parent.removeProgressElement(this);
     }
 
