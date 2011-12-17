@@ -143,7 +143,7 @@ public class DownloadThread implements Runnable {
             byte[] c = new byte[1024]; // hold one kilobyte
             
             while((len = is.read(c)) != -1) {
-                out.write(c, 0, len-1);
+                out.write(c, 0, len);
                 bytesRead += len;
                 
                 // Notify GUI if 0.1 s has elapsed
