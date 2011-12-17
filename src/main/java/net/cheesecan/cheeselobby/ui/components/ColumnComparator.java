@@ -43,9 +43,9 @@ public class ColumnComparator implements Comparator {
 
     public int strCompare(String s1, String s2) {
         if (sortDescending) {
-            return ((String) s1).compareTo((String) s2);
-        } else {
             return ((String) s2).compareTo((String) s1);
+        } else {
+            return ((String) s1).compareTo((String) s2);
         }
     }
 

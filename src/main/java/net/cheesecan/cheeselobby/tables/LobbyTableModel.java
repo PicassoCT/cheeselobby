@@ -109,22 +109,22 @@ public class LobbyTableModel<E extends SessionObject> extends DefaultTableModel 
         fireTableStructureChanged();
 
         // Re-sort table by the same column as it was last sorted by
-        sort(lastSortedBy);
+        sort(lastSortedBy, true);
     }
 
     /**
      * Sorts columns of the model in ascending or descending order.
      * @param column column index to sort.
      */
-    public void sort(int column) {
-        if(column == lastSortedBy) {
+    public void sort(int column, boolean keepOrder) {
+        if(column == lastSortedBy && !keepOrder) {
             // Flip value if this is the same column as last time
             comparator[column].flip();
         }
-        // Set lastSortedBy
-        lastSortedBy = column;
-        
         // Sort columns
         Collections.sort(data, comparator[column]);
+        
+        // Set lastSortedBy
+        lastSortedBy = column;
     }
 }

@@ -32,13 +32,17 @@ public class LobbyTable extends PackedTable {
             @Override
             public void mouseClicked(MouseEvent e) {
                 int col = m.getColumnIndexAtX(e.getX());
-                ((LobbyTableModel) table.getModel()).sort(col);
+                ((LobbyTableModel) table.getModel()).sort(col, false);
             }
         });
 
         // Make selectable one row at a time
         getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         setEnabled(true);
+    }
+    
+    public void sortByColumn(int columnId) {
+        ((LobbyTableModel) getModel()).sort(columnId, false);
     }
 
     @Override

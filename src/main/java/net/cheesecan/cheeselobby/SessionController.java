@@ -88,7 +88,7 @@ public class SessionController extends Thread implements BattleListControllerFac
     private Semaphore lastPongSemaphore = new Semaphore(1); // sempahore used to provide concurrent-safe access to lastPong
     //private long pingInterval;  // how often to send pings
     private boolean ping;
-    private long minPingDelay;  // minimum delay between pings
+    private static long minPingDelay;  // minimum delay between pings
     private long pingTimeout;
     // Application info
     private SettingsFile settings;
@@ -985,5 +985,9 @@ public class SessionController extends Thread implements BattleListControllerFac
                 }
             }
         });
+    }
+
+    public static long getMinPingDelay() {
+        return minPingDelay;
     }
 }

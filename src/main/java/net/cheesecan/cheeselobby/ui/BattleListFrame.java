@@ -31,7 +31,6 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.InternalFrameAdapter;
-import net.cheesecan.cheeselobby.ui.interfaces.BattleListControllerFacade;
 import net.cheesecan.cheeselobby.tables.TablePacker;
 import net.cheesecan.cheeselobby.tables.LobbyTable;
 import net.cheesecan.cheeselobby.tables.LobbyTableModel;
@@ -40,6 +39,7 @@ import net.cheesecan.cheeselobby.ui.components.PasswordIconRenderer;
 import net.cheesecan.cheeselobby.session.Battle;
 import net.cheesecan.cheeselobby.session.User;
 import net.cheesecan.cheeselobby.ui.interfaces.BattleListControllerFacade;
+import net.cheesecan.cheeselobby.ui.interfaces.DownloaderFacade;
 import net.cheesecan.cheeselobby.unitsync.UnitSyncForJava;
 import org.pushingpixels.substance.api.renderers.SubstanceDefaultTableCellRenderer.BooleanRenderer;
 
@@ -48,13 +48,17 @@ import org.pushingpixels.substance.api.renderers.SubstanceDefaultTableCellRender
  * @author jahziah
  */
 public class BattleListFrame extends JInternalFrame implements ActionListener, BattleListObserver {
+    private static final String MAP_MISSING = "/misc/missing128.png";
 
     private BattleListControllerFacade battleListController;
     private NewMainFrame parent;
     private UnitSyncForJava unitSync;
+    private boolean mapMissing = false;
+    private DownloaderFacade downloader;
 
     /** Creates new form BattleListFrame */
-    public BattleListFrame(BattleListControllerFacade battleController, NewMainFrame parent, UnitSyncForJava unitSync) {
+    public BattleListFrame(BattleListControllerFacade battleController, NewMainFrame parent, UnitSyncForJava unitSync, DownloaderFacade downloader) {
+        this.downloader = downloader;
         this.battleListController = battleController;
         this.parent = parent;
         this.unitSync = unitSync;
@@ -88,6 +92,25 @@ public class BattleListFrame extends JInternalFrame implements ActionListener, B
                 reveal();
             }
         });
+        
+        mapReviewLabel.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                clickMapDownload();
+            }
+        });
+    }
+    
+    private void clickMapDownload() {
+        if(mapMissing) {
+            int downloadMap = JOptionPane.showConfirmDialog(this, "Would you like to download this map?", "Download missing map", JOptionPane.YES_NO_OPTION);
+            if(downloadMap == JOptionPane.YES_OPTION) {
+                Battle currentlySelectedBattle = getCurrentlySelectedBattle();
+                downloader.downloadMap(currentlySelectedBattle.getMapName()); // tell downloader to download said map
+            }
+        }
     }
 
     private void initBattlesTable() {
@@ -119,16 +142,13 @@ public class BattleListFrame extends JInternalFrame implements ActionListener, B
             }
 
             private void performLeftMouseClickAction(MouseEvent e) {
-                // Get battle id
-                int row = battlesTable.getSelectedRow();
-
-                // If row is -1 then view was reset TODO resolve
-                if (row == -1) {
+                // Get value at row,col
+                Battle b = getCurrentlySelectedBattle();
+                
+                if(b == null) {
                     return;
                 }
-
-                // Get value at row,col
-                Battle b = ((Battle) ((LobbyTableModel) battlesTable.getModel()).getData().get(row));
+                
                 int battleId = b.getBattleId();
 
                 // Set data in battle view model
@@ -145,8 +165,21 @@ public class BattleListFrame extends JInternalFrame implements ActionListener, B
                 throw new UnsupportedOperationException("Not yet implemented");
             }
         });
-        // TODO Add listener for keys
+        // TODO Add listener for keys (up/down)
 
+    }
+    
+    private Battle getCurrentlySelectedBattle() {
+        // Get battle id
+        int row = battlesTable.getSelectedRow();
+
+        // If row is -1 then view was reset TODO resolve this
+        if (row == -1) {
+            return null;
+        }
+
+        // Get value at row,col
+        return ((Battle) ((LobbyTableModel) battlesTable.getModel()).getData().get(row));
     }
 
     private void initBattleViewTable() {
@@ -217,9 +250,11 @@ public class BattleListFrame extends JInternalFrame implements ActionListener, B
         // TODO add caching to improve performance
         try {
             mapReviewLabel.setIcon(new ImageIcon(unitSync.getMinimap(unitSync.mapChecksumToArchiveName(mapChecksum), 3)));
+            mapMissing = true;
         } catch (IOException ex) {
             // Does not have said map
-            mapReviewLabel.setIcon(new ImageIcon(getClass().getResource("/misc/missing128.png")));
+            mapReviewLabel.setIcon(new ImageIcon(getClass().getResource(MAP_MISSING)));
+            mapMissing = true;
         }
         mapReviewLabel.setToolTipText(mapName);
     }

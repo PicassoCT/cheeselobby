@@ -49,6 +49,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JProgressBar;
+import javax.swing.JSeparator;
 import javax.swing.JTextPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingUtilities;
@@ -122,6 +123,8 @@ public class LoginFrame extends JInternalFrame implements ActionListener, LoginO
 
         // Register as a login observer with the login controller
         loginController.registerAsLoginObserver(this);
+        
+        progressBar.setVisible(false);
     }
 
     /** This method is called from within the constructor to
@@ -168,6 +171,7 @@ public class LoginFrame extends JInternalFrame implements ActionListener, LoginO
         jLabel1.setFont(new Font("Ubuntu", 1, 14)); // NOI18N
         jLabel1.setForeground(new Color(0, 5, 255));
         jLabel1.setText("Forgot your password?");
+        jLabel1.setEnabled(false);
 
         GroupLayout loginPanelLayout = new GroupLayout(loginPanel);
         loginPanel.setLayout(loginPanelLayout);
@@ -177,48 +181,38 @@ public class LoginFrame extends JInternalFrame implements ActionListener, LoginO
                 .addContainerGap()
                 .addGroup(loginPanelLayout.createParallelGroup(Alignment.LEADING)
                     .addGroup(loginPanelLayout.createSequentialGroup()
+                        .addGroup(loginPanelLayout.createParallelGroup(Alignment.LEADING)
+                            .addComponent(usernameLbl)
+                            .addComponent(passwordLbl))
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addGroup(loginPanelLayout.createParallelGroup(Alignment.LEADING)
+                            .addGroup(Alignment.TRAILING, loginPanelLayout.createSequentialGroup()
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(passwordField, GroupLayout.PREFERRED_SIZE, 349, GroupLayout.PREFERRED_SIZE))
+                            .addComponent(userNameBox, GroupLayout.PREFERRED_SIZE, 349, GroupLayout.PREFERRED_SIZE))
+                        .addGap(4, 4, 4))
+                    .addGroup(loginPanelLayout.createSequentialGroup()
                         .addComponent(jLabel1)
-                        .addContainerGap(291, Short.MAX_VALUE))
-                    .addGroup(Alignment.TRAILING, loginPanelLayout.createParallelGroup(Alignment.LEADING)
-                        .addGroup(loginPanelLayout.createSequentialGroup()
-                            .addComponent(loginAutomaticallyCheckbox, GroupLayout.PREFERRED_SIZE, 432, GroupLayout.PREFERRED_SIZE)
-                            .addContainerGap())
-                        .addGroup(Alignment.TRAILING, loginPanelLayout.createParallelGroup(Alignment.LEADING)
-                            .addGroup(loginPanelLayout.createSequentialGroup()
-                                .addComponent(rememberPasswordCheckbox, GroupLayout.PREFERRED_SIZE, 432, GroupLayout.PREFERRED_SIZE)
-                                .addContainerGap())
-                            .addGroup(Alignment.TRAILING, loginPanelLayout.createParallelGroup(Alignment.LEADING)
-                                .addGroup(loginPanelLayout.createSequentialGroup()
-                                    .addComponent(passwordField, GroupLayout.PREFERRED_SIZE, 432, GroupLayout.PREFERRED_SIZE)
-                                    .addContainerGap())
-                                .addGroup(Alignment.TRAILING, loginPanelLayout.createParallelGroup(Alignment.LEADING)
-                                    .addGroup(loginPanelLayout.createSequentialGroup()
-                                        .addComponent(userNameBox, GroupLayout.PREFERRED_SIZE, 432, GroupLayout.PREFERRED_SIZE)
-                                        .addContainerGap())
-                                    .addGroup(Alignment.TRAILING, loginPanelLayout.createSequentialGroup()
-                                        .addGroup(loginPanelLayout.createParallelGroup(Alignment.LEADING)
-                                            .addComponent(passwordLbl)
-                                            .addComponent(usernameLbl))
-                                        .addGap(369, 369, 369))))))
-                    .addGroup(loginPanelLayout.createSequentialGroup()
-                        .addComponent(loginBtn, GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .addGroup(loginPanelLayout.createSequentialGroup()
-                        .addComponent(jButton1, GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
-                        .addContainerGap())))
-            .addComponent(progressBar, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)
+                        .addPreferredGap(ComponentPlacement.RELATED, 279, GroupLayout.PREFERRED_SIZE))
+                    .addGroup(loginPanelLayout.createParallelGroup(Alignment.TRAILING, false)
+                        .addComponent(progressBar, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jButton1, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(loginBtn, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(loginAutomaticallyCheckbox, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
+                        .addComponent(rememberPasswordCheckbox, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         loginPanelLayout.setVerticalGroup(
             loginPanelLayout.createParallelGroup(Alignment.LEADING)
             .addGroup(loginPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(usernameLbl)
+                .addGap(15, 15, 15)
+                .addGroup(loginPanelLayout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(usernameLbl)
+                    .addComponent(userNameBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(userNameBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addGap(7, 7, 7)
-                .addComponent(passwordLbl)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(passwordField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addGroup(loginPanelLayout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(passwordField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(passwordLbl))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(rememberPasswordCheckbox)
                 .addGap(2, 2, 2)
@@ -229,8 +223,9 @@ public class LoginFrame extends JInternalFrame implements ActionListener, LoginO
                 .addComponent(loginBtn)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(jButton1)
-                .addPreferredGap(ComponentPlacement.RELATED, 7, Short.MAX_VALUE)
-                .addComponent(progressBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(progressBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         getContentPane().add(loginPanel);
@@ -300,6 +295,7 @@ public class LoginFrame extends JInternalFrame implements ActionListener, LoginO
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
         // Set progress bar
+        progressBar.setVisible(true);
         progressBar.setIndeterminate(true);
     }
 
@@ -317,6 +313,8 @@ public class LoginFrame extends JInternalFrame implements ActionListener, LoginO
 
                 // Notify our parent that we're closing
                 parent.loginFinished();
+                
+                progressBar.setVisible(false);
             }
         });
     }
@@ -332,6 +330,8 @@ public class LoginFrame extends JInternalFrame implements ActionListener, LoginO
 
                 // Show error popup
                 JOptionPane.showMessageDialog(thisPtr, "Login failed: " + reason);
+                
+                progressBar.setVisible(false);
             }
         });
     }

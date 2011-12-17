@@ -333,20 +333,20 @@ public class NewMainFrame extends JFrame implements Disconnectable {
     }
 
     private void initializeWindows() {
+         // Initialize downloader
+        downloader = new DownloaderFrame(settings);
+        bg.add(downloader);
         // Start chat frame
         chat = new ChatFrame(sessionController, settings);
         // Add chat frame to desktop pane
         bg.add(chat);
         // Start battle list frame
-        battle = new BattleListFrame(sessionController, this, unitSync);
+        battle = new BattleListFrame(sessionController, this, unitSync, downloader);
         // Add battle room frame
         bg.add(battle);
         // Initialize battleRoom
         battleRoom = new BattleRoomFrame(sessionController, settings, unitSync);
         bg.add(battleRoom);
-        // Initialize downloader
-        downloader = new DownloaderFrame(settings);
-        bg.add(downloader);
     }
 
     private void disposeOfWindow(JInternalFrame window) {

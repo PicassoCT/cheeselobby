@@ -56,6 +56,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
+import net.cheesecan.cheeselobby.SessionController;
 import net.cheesecan.cheeselobby.io.SettingsFile;
 import net.cheesecan.cheeselobby.lobby_connection.interfaces.ChatObserver;
 import net.cheesecan.cheeselobby.tables.TablePacker;
@@ -151,6 +152,8 @@ public class ChatFrame extends JInternalFrame implements ActionListener, ChangeL
         tabbedPane.putClientProperty(SubstanceLookAndFeel.TABBED_PANE_CLOSE_CALLBACK, closedTab);
 
         setDividerLocation();
+        
+        pingLabel.setToolTipText("Updated every " + SessionController.getMinPingDelay()/1000 + " seconds.");
     }
 
     private void initServerUserTable() {

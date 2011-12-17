@@ -27,6 +27,9 @@ import java.awt.FlowLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyVetoException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
@@ -52,12 +55,13 @@ import net.cheesecan.cheeselobby.io.torrent.DownloadThread.DownloadType;
 import net.cheesecan.cheeselobby.ui.components.DownloadOption;
 import net.cheesecan.cheeselobby.ui.components.ProgressElement;
 import net.cheesecan.cheeselobby.ui.interfaces.DownloadObserver;
+import net.cheesecan.cheeselobby.ui.interfaces.DownloaderFacade;
 
 /**
  *
  * @author jahziah
  */
-public class DownloaderFrame extends JInternalFrame implements DownloadObserver {
+public class DownloaderFrame extends JInternalFrame implements DownloadObserver, DownloaderFacade {
 
     public void notifyDownloadProgress(final String filename, final int progress, final long bps) {
         final DownloaderFrame thisRef = this;
@@ -87,7 +91,7 @@ public class DownloaderFrame extends JInternalFrame implements DownloadObserver 
             pe.refresh();
         }
     }
-    
+
     public void removeProgressElement(ProgressElement toRemove) {
         progressPanel.remove(toRemove.getPosition());
         progressPanel.validate();
@@ -111,16 +115,16 @@ public class DownloaderFrame extends JInternalFrame implements DownloadObserver 
                 DownloadOption options[] = new DownloadOption[1];
                 options[0] = new DownloadOption(txt, resource);
                 mapsList.setListData(options);
+                mapsList.setSelectedIndex(0); // auto-select first result
             }
         }).start();
     }
-
     private SettingsFile settings;
-    
+
     /** Creates new form DownloaderFrame */
     public DownloaderFrame(SettingsFile settings) {
         this.settings = settings;
-        
+
         initComponents();
         postInitComponents();
         setLocation();
@@ -151,21 +155,25 @@ public class DownloaderFrame extends JInternalFrame implements DownloadObserver 
         downloadButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                downloadSelectedFile();
+                DownloadOption item = (DownloadOption) mapsList.getSelectedValue();
+
+                if (mapRadioButton.isSelected()) {
+                    downloadFile(item.toString(), item.getUrl(), DownloadType.Map);
+                } else {
+                    System.out.println("Widget and mod downloading not implemented");
+                }
             }
         });
     }
 
-    private void downloadSelectedFile() {
-        DownloadOption item;
-        if (searchGroup.getSelection().equals(mapRadioButton.getModel())) {
-            item = (DownloadOption) mapsList.getSelectedValue();
-            new Thread(new DownloadThread(this, item.toString(), item.getUrl(), DownloadType.Map)).start();
+    private void downloadFile(String name, String url, DownloadType type) {
+        if (type == DownloadType.Map) {
+            new Thread(new DownloadThread(this, name, url, DownloadType.Map)).start();
         } else {
             return;
         }
     }
-    
+
     public String getSavePath() {
         return settings.getSpringDataDirectory();
     }
@@ -362,4 +370,11 @@ public class DownloaderFrame extends JInternalFrame implements DownloadObserver 
     private JList widgetsList;
     private JScrollPane widgetsScrollPane;
     // End of variables declaration//GEN-END:variables
+
+    public void downloadMap(String name) {
+        String url = DownloadThread.lookupResourceLocation(name);
+        downloadFile(name, url, DownloadType.Map);
+        setVisible(true);
+        toFront();
+    }
 }
