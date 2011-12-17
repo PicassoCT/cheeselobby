@@ -4,6 +4,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
@@ -13,6 +15,8 @@ import javax.swing.table.TableModel;
  * @author jahziah
  */
 public class LobbyTable extends PackedTable {
+    
+    private int lastRowSelectedHash = -1;
 
     public LobbyTable(LobbyTableModel model) {
         // call my father and pass to it my TableModel
@@ -36,10 +40,29 @@ public class LobbyTable extends PackedTable {
                 ((LobbyTableModel) table.getModel()).sort(col, false);
             }
         });
-
+        
         // Make selectable one row at a time
         getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        
+        
+        getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+
+            public void valueChanged(ListSelectionEvent e) {
+                selectedRowEvent(e.getFirstIndex());
+            }
+        });
+        
         setEnabled(true);
+    }
+    
+    private void selectedRowEvent(int index0) {
+        if(index0 == -1) {
+            return;
+        }
+        lastRowSelectedHash = ((LobbyTableModel) getModel()).getData().get(index0).hashCode();
+        
+        //System.out.println("Selected row " + index0 +" with hash " + lastRowSelectedHash + ".");
+        //System.out.println("Battle is " + ((LobbyTableModel) getModel()).getData().get(index0).toString() +"");
     }
     
     public void sortByColumn(int columnId) {
@@ -48,24 +71,18 @@ public class LobbyTable extends PackedTable {
 
     @Override
     public void tableChanged(TableModelEvent e) {
-        int prevSelectedRow = this.getSelectedRow();
-        
-        Object prev = null;
-        if(prevSelectedRow != -1) {
-            prev = ((LobbyTableModel) getModel()).getData().get(prevSelectedRow);
-        }
-        
         super.tableChanged(e);
         
         // When there is a fireTableStructureChanged event, we want to remember what row we had selected previously, if any
-        if(prevSelectedRow != -1 && prevSelectedRow <= getRowCount()) {
-            int pHashCode = prev.hashCode(); // hash of previous row, used to select same row after the update as indexes have changed
-            
+        if(lastRowSelectedHash != -1) {
             List data = ((LobbyTableModel) getModel()).getData();
             for(int k=0; k<data.size(); k++) {
-                if(data.get(k).hashCode() == pHashCode) {
+                if(data.get(k).hashCode() == lastRowSelectedHash) {
                     setRowSelectionInterval(k, k);
-                    break;
+                    
+                    //System.out.println("Re-selected row " + k + " with hash " + data.get(k).hashCode() + ".");
+                    //System.out.println("Battle is " + data.get(k).toString() +"\n");
+                    break; 
                 }
             }
         }

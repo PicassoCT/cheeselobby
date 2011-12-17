@@ -16,7 +16,7 @@ public class Battle implements SessionObject {
         closedAndStarted,
     }
     // Fields
-    private int battleId;
+    private final int battleId;
     private int type;
     private int natType;
     private String ip;
@@ -72,10 +72,6 @@ public class Battle implements SessionObject {
 
     public int getBattleId() {
         return battleId;
-    }
-
-    public void setBattleId(int battleId) {
-        this.battleId = battleId;
     }
 
     public String getCreatorName() {
@@ -277,8 +273,11 @@ public class Battle implements SessionObject {
 
     @Override
     public int hashCode() {
-        int hash = 5;
-        hash = 53 * hash + this.battleId;
-        return hash;
+        return battleId;
+    }
+
+    @Override
+    public String toString() {
+        return getTitle();
     }
 }

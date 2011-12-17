@@ -105,11 +105,11 @@ public class LobbyTableModel<E extends SessionObject> extends DefaultTableModel 
     }
 
     private void updateTableModel() {
-        // Fire change event
-        fireTableStructureChanged();
-
         // Re-sort table by the same column as it was last sorted by
         sort(lastSortedBy, true);
+        
+        // Fire change event
+        fireTableStructureChanged();
     }
 
     /**
