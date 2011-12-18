@@ -180,7 +180,7 @@ public class UnitSyncForJava {
             String archiveName = UnitsyncLibrary.GetMapName(i).getString(0);
             mapIndexes.put(archiveName, i);
             mapChecksums.put(UnitsyncLibrary.GetMapChecksumFromName(archiveName), archiveName);
-            //System.out.println(archiveName + " hashes to " + UnitsyncLibrary.GetMapChecksumFromName(archiveName));
+            System.out.println(archiveName + " hashes to " + UnitsyncLibrary.GetMapChecksumFromName(archiveName));
         }
     }
 

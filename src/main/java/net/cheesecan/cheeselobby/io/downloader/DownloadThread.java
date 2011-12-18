@@ -90,19 +90,15 @@ public class DownloadThread implements Runnable {
 
             return null;
 
-        } catch (SAXException ex) {
-            Logger.getLogger(TorrentHandler.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ParserConfigurationException ex) {
-            Logger.getLogger(TorrentHandler.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(TorrentHandler.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            Logger.getLogger(DownloadThread.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
                 if (outputStream != null) {
                     outputStream.close();
                 }
             } catch (IOException ex) {
-                Logger.getLogger(TorrentHandler.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(DownloadThread.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         return null;

@@ -82,6 +82,9 @@ public class BattleListFrame extends JInternalFrame implements ActionListener, B
                 reveal();
             }
         });
+        
+        setPreferredSize(new Dimension((int)NewMainFrame.getScreenSize().getWidth(),
+               800));
     }
 
     private void initBattlesTable() {

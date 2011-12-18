@@ -1,7 +1,39 @@
-. . . . . .CheeseLobby. . . . . .
+Introduction
+------------
 This project is maintained using Maven2 and is licensed with Apache License V 2.0.
 
 https://github.com/jahwag/cheeselobby
 
-. . . . . .Building. . . . . . . 
-To build the project, you must first install the required libraries found in /lib/ by executing install_lwjgl.sh and install_unitsync.sh.
+Building
+--------
+To build the project, you must first install unitsync as a maven dependency by running lib/install_unitsync.sh.
+
+You will need JDK x86 to compile the project for Windows. For Linux you may use JDK x64 if your spring is compiled with x64.
+
+Running
+-------
+When you run the executable jar you will need to supply library path for LWJGL natives by using the following JVM argument:
+
+-Djava.library.path="<your_cheeselobby_path>\lib\native\<your_operating_system>"
+
+Todo
+----
+For developers. Here are some things to do(in no particular order of priority or difficulty):
+
+* When the player's own name is said in chat, it should be highlighted in bold
+
+* Game autostart doesn't work
+
+* Windows should be maximized and placed out in a good way
+
+* Window positions should be remembered and stored in properties file
+
+* Player names in chat should be in bold
+
+* In the battle room and also chat, all pasted links should be clickable and open up in the default system browser
+
+* Add listener to handle pressing of up/down keys in the battle list, so that the user can select battles with the keyboard.
+
+* Implement unimplemented lobby server commands.
+
+* Implement hosting games.

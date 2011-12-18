@@ -143,7 +143,27 @@ public class NewMainFrame extends JFrame implements Disconnectable {
             settingsDialog.showAtCenterOfScreen();
         }
         // Load unitsync
-        Runtime.getRuntime().load(settings.getUnitSyncPath());
+        try {
+            String os = System.getProperty("os.name");
+
+            // if windows
+            if (os.contains("Windows")) {
+                String springDllPath = settings.getUnitSyncPath().replaceAll("unitsync.dll", 
+                        "");
+                Runtime.getRuntime().load(
+                        springDllPath + "DevIL.dll");
+                Runtime.getRuntime().load(
+                        springDllPath + "ILU.dll");
+                Runtime.getRuntime().load(
+                        springDllPath + "SDL.dll");
+            }
+
+            Runtime.getRuntime().load(settings.getUnitSyncPath());
+        } catch (UnsatisfiedLinkError e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            Logger.getLogger(NewMainFrame.class.getName()).log(Level.SEVERE, null, e);
+            System.exit(1);
+        }
         unitSync = new UnitSyncForJava();
         unitSync.refreshMapHashes();
     }
@@ -218,7 +238,7 @@ public class NewMainFrame extends JFrame implements Disconnectable {
                     exitMenuActionPerformed();
                 } else if (e.getSource() == logoutMenu) {
                     logoutMenuActionPerformed();
-                } else if(e.getSource() == downloadMenu) {
+                } else if (e.getSource() == downloadMenu) {
                     downloader.setVisible(true);
                 }
             }
@@ -301,7 +321,7 @@ public class NewMainFrame extends JFrame implements Disconnectable {
 
         pack();
     }
-    
+
     public static Dimension getScreenSize() {
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         int width = ge.getDefaultScreenDevice().getDisplayMode().getWidth();
@@ -341,10 +361,12 @@ public class NewMainFrame extends JFrame implements Disconnectable {
         // Make visible
         battle.setVisible(true);
         chat.setVisible(true);
+        
+        bg.repaint();
     }
 
     private void initializeWindows() {
-         // Initialize downloader
+        // Initialize downloader
         downloader = new DownloaderFrame(settings, unitSync);
         bg.add(downloader);
         // Start chat frame
@@ -371,13 +393,13 @@ public class NewMainFrame extends JFrame implements Disconnectable {
 
     @Override
     public void disconnect(final String previousName, final String newName, final String reason) {
-      SwingUtilities.invokeLater(new Runnable() {
+        SwingUtilities.invokeLater(new Runnable() {
 
-                @Override
-                public void run() {
-                    _disconnect(previousName, newName, reason);
-                }
-            });
+            @Override
+            public void run() {
+                _disconnect(previousName, newName, reason);
+            }
+        });
     }
 
     private void _disconnect(String previousName, String newName, String reason) {
@@ -397,12 +419,14 @@ public class NewMainFrame extends JFrame implements Disconnectable {
         initLoginWindow();
 
         // Show popup if the user did not perform disconnect themselves
-        if(reason != null)
-        JOptionPane.showMessageDialog(this, reason, "You were disconnected", JOptionPane.INFORMATION_MESSAGE);
+        if (reason != null) {
+            JOptionPane.showMessageDialog(this, reason, "You were disconnected", JOptionPane.INFORMATION_MESSAGE);
+        }
 
         // Set the renamed name if this was a /rename-caused disconnect
-        if(newName != null)
-        login.changeAccountName(previousName, newName);
+        if (newName != null) {
+            login.changeAccountName(previousName, newName);
+        }
 
     }
 }

@@ -100,10 +100,27 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private void autoconfigureWindows() {
         // Get the disk, C, D, etc
         char disk = System.getProperty("user.home").charAt(0);
-        File springDataDir = new File(disk + ":/Program files/Spring/");
+         // Get username
+        String username = System.getProperty("user.name");
+        File springDataDir = 
+                new File(disk + ":/Users/"+username+"/Documents/My Games/Spring/");
+        if(springDataDir.listFiles() == null) { // if failed
+            JOptionPane.showMessageDialog(this, "Could not autoconfigure.");
+            System.out.println(springDataDir.getAbsolutePath());
+            return;
+        }
         // If it exists
         if (springDataDir.exists() && springDataDir.isDirectory()) {
             dataDirectoryField.setText(springDataDir.getAbsolutePath());
+        }
+        // Check for exe at another location
+        springDataDir = new File(disk + ":/Program files/Spring/");
+        if(springDataDir.listFiles() == null) { // check other dir
+            springDataDir = new File(disk + ":/Program files (x86)/Spring/");
+        } if(springDataDir.listFiles() == null) { // if failed
+            JOptionPane.showMessageDialog(this, "Could not autoconfigure.");
+            System.out.println(springDataDir.getAbsolutePath());
+            return;
         }
         File springExe = null;
         File unitSync = null;
