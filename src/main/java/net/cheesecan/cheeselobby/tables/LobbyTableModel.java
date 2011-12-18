@@ -48,20 +48,27 @@ public class LobbyTableModel<E extends SessionObject> extends DefaultTableModel 
 
     @Override
     public int getRowCount() {
-        if (data == null || data.size() <= 0) {
+        /*
+        if (data == null || data.isEmpty()) {
             return 0;
         } else {
             return data.size();
+        }*/
+        if(data == null) {
+            return 0;
         }
+        return data.size();
     }
 
     @Override
     public int getColumnCount() {
+        /*
         if (columnNames == null || columnNames.length <= 0) {
             return 0;
         } else {
             return columnNames.length;
-        }
+        }*/
+        return columnNames.length;
     }
 
     @Override

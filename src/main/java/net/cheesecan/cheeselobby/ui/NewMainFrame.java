@@ -17,6 +17,8 @@
 package net.cheesecan.cheeselobby.ui;
 
 import java.awt.Desktop;
+import java.awt.Dimension;
+import java.awt.GraphicsEnvironment;
 import java.awt.HeadlessException;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -279,7 +281,8 @@ public class NewMainFrame extends JFrame implements Disconnectable {
         setTitle(title);
 
         // Set members' properties
-        bg.setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
+        bg.setPreferredSize(getScreenSize());
+        setPreferredSize(getScreenSize());
         setExtendedState(getExtendedState() | JFrame.MAXIMIZED_BOTH);
 
         // Add members
@@ -297,6 +300,13 @@ public class NewMainFrame extends JFrame implements Disconnectable {
         });
 
         pack();
+    }
+    
+    public static Dimension getScreenSize() {
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        int width = ge.getDefaultScreenDevice().getDisplayMode().getWidth();
+        int height = ge.getDefaultScreenDevice().getDisplayMode().getHeight();
+        return new Dimension(width, height);
     }
 
     private void initLoginWindow() {

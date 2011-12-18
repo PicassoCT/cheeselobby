@@ -29,8 +29,8 @@ public class SubstanceSkinComboBox extends JComboBox {
         SubstanceSkin currentSkin = SubstanceLookAndFeel.getCurrentSkin();
         if(currentSkin != null) {
             for (SkinInfo skinInfo : SubstanceLookAndFeel.getAllSkins().values()) {
-                if (skinInfo.getDisplayName().compareTo(
-                        currentSkin.getDisplayName()) == 0) {
+                if (skinInfo.getDisplayName().equals(
+                        currentSkin.getDisplayName())) {
                     this.setSelectedItem(skinInfo);
                     break;
                 }

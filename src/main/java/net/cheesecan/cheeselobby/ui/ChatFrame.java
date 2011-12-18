@@ -430,8 +430,8 @@ public class ChatFrame extends JInternalFrame implements ActionListener, ChangeL
 
     private void setPosition() {
          // Compute size and location of frame
-        double x = Toolkit.getDefaultToolkit().getScreenSize().getWidth();
-        double y = Toolkit.getDefaultToolkit().getScreenSize().getHeight();
+        double x = NewMainFrame.getScreenSize().getWidth();
+        double y = NewMainFrame.getScreenSize().getHeight();
         setLocation((int) x -getWidth(), 0);
     }
 

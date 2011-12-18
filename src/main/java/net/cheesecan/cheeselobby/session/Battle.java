@@ -46,7 +46,7 @@ public class Battle implements SessionObject {
     @Override
     public Object getValueByIndex(int i) {
         // "Status", "Name", "Creator", "Rank limit", "Mod", "Map", "Players", "Spectators"}
-        switch (i) {
+        switch (i) { // TODO optimize n if-cases to one array lookup
             case 0:
                 return status;
             case 1:

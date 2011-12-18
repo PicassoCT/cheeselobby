@@ -262,7 +262,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
 
     public void showAtCenterOfScreen() {
         // Show at the center of the screen
-        setLocation(new Point((int) Toolkit.getDefaultToolkit().getScreenSize().getWidth() / 2 - getWidth() / 2, (int) Toolkit.getDefaultToolkit().getScreenSize().getHeight() / 2 - getHeight() / 2));
+        setLocation(new Point((int) NewMainFrame.getScreenSize().getWidth() / 2 - getWidth() / 2, (int) Toolkit.getDefaultToolkit().getScreenSize().getHeight() / 2 - getHeight() / 2));
         setVisible(true);
     }
 

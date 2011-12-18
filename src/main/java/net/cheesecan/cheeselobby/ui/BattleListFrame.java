@@ -6,9 +6,7 @@
 package net.cheesecan.cheeselobby.ui;
 
 import java.awt.CardLayout;
-import java.awt.Color;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.InternalFrameEvent;
@@ -28,7 +26,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.InternalFrameAdapter;
 import net.cheesecan.cheeselobby.tables.TablePacker;
@@ -38,6 +35,7 @@ import net.cheesecan.cheeselobby.ui.components.IconRenderer;
 import net.cheesecan.cheeselobby.ui.components.PasswordIconRenderer;
 import net.cheesecan.cheeselobby.session.Battle;
 import net.cheesecan.cheeselobby.session.User;
+import net.cheesecan.cheeselobby.ui.components.GameTitleRenderer;
 import net.cheesecan.cheeselobby.ui.components.MinimapDisplay;
 import net.cheesecan.cheeselobby.ui.interfaces.BattleListControllerFacade;
 import net.cheesecan.cheeselobby.ui.interfaces.DownloaderFacade;
@@ -168,8 +166,6 @@ public class BattleListFrame extends JInternalFrame implements ActionListener, B
     private void setLocation() {
         // Set location
         pack();
-        // double x = Toolkit.getDefaultToolkit().getScreenSize().getWidth() / 2;
-        //double y = Toolkit.getDefaultToolkit().getScreenSize().getHeight() / 2;
         setLocation(0, 0);
         setResizable(true);
     }
@@ -178,6 +174,7 @@ public class BattleListFrame extends JInternalFrame implements ActionListener, B
         // Set flag and rank columns
         battlesTable.getColumnModel().getColumn(0).setCellRenderer(new IconRenderer(NewMainFrame.lobbyIcons.getBattleStatusIcons()));
         battlesTable.getColumnModel().getColumn(1).setCellRenderer(new PasswordIconRenderer());
+        battlesTable.getColumnModel().getColumn(2).setCellRenderer(new GameTitleRenderer());
         battlesTable.getColumnModel().getColumn(4).setCellRenderer(new IconRenderer(NewMainFrame.lobbyIcons.getRankIcons()));
 
         battlesTable.getColumnModel().getColumn(0).setMaxWidth(32);
@@ -270,6 +267,7 @@ public class BattleListFrame extends JInternalFrame implements ActionListener, B
         getContentPane().setLayout(new CardLayout());
 
         battlesScrollPane.setBorder(BorderFactory.createTitledBorder("Battle list"));
+        battlesScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
         battlesScrollPane.setPreferredSize(new Dimension(256, 256));
 
         joinButton.setText("Join");
@@ -305,10 +303,10 @@ public class BattleListFrame extends JInternalFrame implements ActionListener, B
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(Alignment.LEADING)
             .addGroup(Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addComponent(usersScrollPane, GroupLayout.DEFAULT_SIZE, 1155, Short.MAX_VALUE)
+                .addComponent(usersScrollPane, GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(jPanel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-            .addComponent(battlesScrollPane, GroupLayout.DEFAULT_SIZE, 1335, Short.MAX_VALUE)
+            .addComponent(battlesScrollPane, GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(Alignment.LEADING)

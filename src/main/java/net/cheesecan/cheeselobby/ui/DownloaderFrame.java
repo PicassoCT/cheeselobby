@@ -189,8 +189,8 @@ public class DownloaderFrame extends JInternalFrame implements DownloaderFacade 
     private void setLocation() {
         // Compute size and location of frame
         pack();
-        double x = Toolkit.getDefaultToolkit().getScreenSize().getWidth() / 2;
-        double y = Toolkit.getDefaultToolkit().getScreenSize().getHeight() / 2;
+        double x = NewMainFrame.getScreenSize().getWidth() / 2;
+        double y = NewMainFrame.getScreenSize().getHeight() / 2;
         setLocation((int) x - getWidth() / 2, (int) ((int) y - getHeight() / 2));
 
         // Set icon

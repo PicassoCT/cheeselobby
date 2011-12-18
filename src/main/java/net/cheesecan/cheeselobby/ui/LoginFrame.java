@@ -83,8 +83,8 @@ public class LoginFrame extends JInternalFrame implements ActionListener, LoginO
         //setMinimumSize(new Dimension(width, height));
         //setSize(new Dimension(width, height));
         pack();
-        double x = Toolkit.getDefaultToolkit().getScreenSize().getWidth() / 2;
-        double y = Toolkit.getDefaultToolkit().getScreenSize().getHeight() / 2;
+        double x = NewMainFrame.getScreenSize().getWidth() / 2;
+        double y = NewMainFrame.getScreenSize().getHeight() / 2;
         setLocation((int) x - getWidth() / 2, (int) ((int) y - getHeight() / 1.5));
 
         // Set icon
@@ -442,8 +442,8 @@ public class LoginFrame extends JInternalFrame implements ActionListener, LoginO
             add(reject, BorderLayout.LINE_START);
 
             setSize(480, 575);
-            setLocation((int) Toolkit.getDefaultToolkit().getScreenSize().getWidth() / 2 - getWidth(),
-                    (int) Toolkit.getDefaultToolkit().getScreenSize().getHeight() / 2 - getHeight());
+            setLocation((int) NewMainFrame.getScreenSize().getWidth() / 2 - getWidth(),
+                    (int) NewMainFrame.getScreenSize().getHeight() / 2 - getHeight());
         }
 
         @Override

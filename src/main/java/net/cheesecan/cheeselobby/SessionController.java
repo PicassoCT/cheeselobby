@@ -162,18 +162,22 @@ public class SessionController extends Thread implements BattleListControllerFac
      * Parses and handles messages from the server.
      */
     private void handleServerMessages() throws ListenerException {
-        // Listener must be on to listen for server messages, and GUI must be ready to accept callbacks
-        if (listener == null) {// || !guiReady
-            return;
-        }
+        try {
+            // Listener must be on to listen for server messages, and GUI must be ready to accept callbacks
+            if (listener == null) {// || !guiReady
+                return;
+            }
 
-        String msg;
-        while ((msg = listener.popQueueItem()) != null) {    // until queue is empty
-            handleServerMessage(msg);
-        }
+            String msg;
+            while ((msg = listener.popQueueItem()) != null) {    // until queue is empty
+                handleServerMessage(msg);
+            }
 
-        // Send ping message if ping timer expired
-        sendPing();
+            // Send ping message if ping timer expired
+            sendPing();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(SessionController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     private void handleServerMessage(String message) {
