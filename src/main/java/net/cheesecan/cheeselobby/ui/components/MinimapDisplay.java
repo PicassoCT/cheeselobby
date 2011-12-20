@@ -29,7 +29,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 import net.cheesecan.cheeselobby.session.Battle;
-import net.cheesecan.cheeselobby.ui.interfaces.BattleObserver;
+import net.cheesecan.cheeselobby.lobby_connection.interfaces.BattleObserver;
+import net.cheesecan.cheeselobby.ui.interfaces.BattleControllerFacade;
 import net.cheesecan.cheeselobby.ui.interfaces.DownloaderFacade;
 import net.cheesecan.cheeselobby.unitsync.UnitSyncForJava;
 
@@ -91,21 +92,37 @@ public class MinimapDisplay extends JLabel implements MouseListener {
         clickMapDownload();
     }
 
-    public void setMinimap(int mapChecksum) {
+    /**
+     * Sets minimap icon based on map checksum.
+     * @param mapChecksum
+     * @param controller
+     * @return true if the player has the map, otherwise false 
+     */
+    public boolean setMinimap(int mapChecksum) {
+        boolean retval;
         ImageIcon icon = null;
         try {
             BufferedImage minimap = unitsync.getMinimap(unitsync.mapChecksumToArchiveName(mapChecksum), 1);
+            
             // Resize to fit component
             minimap = UnitSyncForJava.resize(minimap, width, height, BufferedImage.TYPE_USHORT_565_RGB);
+            
             // Put image into imageicon
             icon = new ImageIcon(minimap);
+            
+            // Set is synced TODO not quite proper to have this in a GUI component
+            retval = true;
         } catch (IOException ex) {
             //Logger.getLogger(MinimapDisplay.class.getName()).log(Level.SEVERE, null, ex);
             icon = getMissingIcon();
+            
+            // Set is not synced TODO not quite proper to have this in a GUI component
+            retval = false;
         }
 
         setToolTipText(observer.getRelevantBattle().getMapName());
         super.setIcon(icon);
+        return retval;
     }
 
     public ImageIcon getMissingIcon() {

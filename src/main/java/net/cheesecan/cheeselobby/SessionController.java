@@ -337,6 +337,13 @@ public class SessionController extends Thread implements BattleListControllerFac
 
                 // Notify battleListObserver of the change
                 battleListObserver.updateBattle(battlesOnServer.get(Integer.valueOf(words[1])));
+                
+                
+                int battleId = Integer.valueOf(words[1]);
+                if(battleId == usersOnServer.get(getUsername()).getBattleId()) { // If we are in this battle
+                    battleObserver.mapChanged(battlesOnServer.get(Integer.valueOf(words[1]))); // notify battle room observer
+                } 
+                
                 break;
             case JOINBATTLE:
                 // We have joined a battle so notify the battleObserver
@@ -1005,5 +1012,11 @@ public class SessionController extends Thread implements BattleListControllerFac
 
     public static long getMinPingDelay() {
         return minPingDelay;
+    }
+
+    public void setIsSynced(boolean value) {
+        // TODO might should be runnable
+        User user = usersOnServer.get(getUsername());
+        sendMyBattleStatus(user.getBattleStatus(), user.getColor());
     }
 }

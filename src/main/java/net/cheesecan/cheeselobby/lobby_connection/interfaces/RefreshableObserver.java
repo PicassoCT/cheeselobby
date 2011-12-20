@@ -14,39 +14,12 @@
  *  limitations under the License.
  *  under the License.
  */
-
 package net.cheesecan.cheeselobby.lobby_connection.interfaces;
-
-import net.cheesecan.cheeselobby.session.Battle;
 
 /**
  *
  * @author jahziah
  */
-public interface BattleListObserver extends BattleObserver {
-
-      /**
-     * Add battle to a battle table
-     * @param name
-     * @param battle
-     */
-    public void addBattle(Battle battle);
-
-    /**
-     * Remove a battle from battle table based on user object.
-     * @param name
-     * @param battle
-     */
-    public void removeBattle(Battle battle);
-
-    /**
-     * Update information on an existing battle.
-     * @param battle
-     */
-    public void updateBattle(Battle battle);
-
-    /**
-     * Notifies window that the join attempted just now failed.
-     */
-    public void joinFailed(String reason);
+public interface RefreshableObserver {
+    public void fireRefreshFromDownloader();
 }

@@ -33,7 +33,7 @@ import javax.swing.SwingUtilities;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import net.cheesecan.cheeselobby.ui.interfaces.BattleObserver;
+import net.cheesecan.cheeselobby.lobby_connection.interfaces.BattleObserver;
 import net.cheesecan.cheeselobby.ui.interfaces.DownloaderFacade;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;

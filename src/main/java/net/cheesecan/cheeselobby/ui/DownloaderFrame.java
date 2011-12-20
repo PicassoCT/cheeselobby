@@ -55,7 +55,7 @@ import net.cheesecan.cheeselobby.io.downloader.DownloadThread;
 import net.cheesecan.cheeselobby.io.downloader.DownloadThread.DownloadType;
 import net.cheesecan.cheeselobby.ui.components.DownloadOption;
 import net.cheesecan.cheeselobby.ui.components.ProgressElement;
-import net.cheesecan.cheeselobby.ui.interfaces.BattleObserver;
+import net.cheesecan.cheeselobby.lobby_connection.interfaces.BattleObserver;
 import net.cheesecan.cheeselobby.ui.interfaces.DownloaderFacade;
 import net.cheesecan.cheeselobby.unitsync.UnitSyncForJava;
 

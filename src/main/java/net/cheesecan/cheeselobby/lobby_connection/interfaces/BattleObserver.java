@@ -14,79 +14,20 @@
  *  limitations under the License.
  *  under the License.
  */
-
 package net.cheesecan.cheeselobby.lobby_connection.interfaces;
 
 import net.cheesecan.cheeselobby.session.Battle;
-import net.cheesecan.cheeselobby.session.User;
-import net.cheesecan.cheeselobby.session.User.GameStatus;
 
 /**
  *
  * @author jahziah
  */
 public interface BattleObserver {
-
     /**
-     * Called when the client has joined a battle that should be displayed.
-     * @param battle
+     * 
+     * @return selected or current battle.
      */
-    public void displayBattle(Battle battle);
-
-    /**
-     * Closes battle view.
-     */
-    public void closeBattle();
-
-     /**
-     * Add user to a user table.
-     * @param channel
-     * @param user
-     */
-    public void addUser(User user);
-
-    /**
-     * Remove a user from user table based on user object.
-     * @param channel
-     * @param user
-     */
-    public void removeUser(User user);
-
-    /**
-     * Updates a user's status in the battle.
-     * @param user
-     * @param previousMode the previous mode of the user. This could be the same or have changed. It is used for the auto-unspec feature.
-     */
-    public void updateUser(User user, GameStatus previousMode);
-
-    /**
-     * Set our own user.
-     * @param User new user
-     */
-    public void setOwnUser(User user);
-
-    /**
-     * Notify that someone wrote something in the battle.
-     * @param sender
-     * @param msg
-     */
-    public void said(String sender, String msg);
-
-    /**
-     * Same as said but for expressions.
-     * @param sender
-     * @param msg
-     */
-    public void saidExpression(String sender, String msg);
-
-    /**
-     * Makes GUI display an error msg.
-     * @param msg contents of said message.
-     */
-    public void showErrorMessage(String msg, String title);
-
-    /**
-     * Notify the battle room that we were kicked.
-     */
-    public void kickedFromBattle();
+    public Battle getRelevantBattle();
+    
+    public void fireRefreshFromDownloader();
 }

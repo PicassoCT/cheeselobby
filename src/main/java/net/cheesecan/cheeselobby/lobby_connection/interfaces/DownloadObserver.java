@@ -14,9 +14,8 @@
  *  limitations under the License.
  *  under the License.
  */
-package net.cheesecan.cheeselobby.ui.interfaces;
+package net.cheesecan.cheeselobby.lobby_connection.interfaces;
 
-import net.cheesecan.cheeselobby.lobby_connection.interfaces.BattleObserver;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,9 +25,8 @@ import net.cheesecan.cheeselobby.ui.components.ProgressElement;
  *
  * @author jahziah
  */
-public interface DownloaderFacade {
-    public void downloadMap(String name, BattleObserver observer);
-        
+public interface DownloadObserver {
+    
     Map<String, ProgressElement> progressContainer = Collections.synchronizedMap(new HashMap<String, ProgressElement>());
     
     public void notifyDownloadProgress(String filename, int progress, long bps);
@@ -38,4 +36,5 @@ public interface DownloaderFacade {
     public void removeProgressElement(ProgressElement toRemove);
     
     public String getSavePath();
+      
 }

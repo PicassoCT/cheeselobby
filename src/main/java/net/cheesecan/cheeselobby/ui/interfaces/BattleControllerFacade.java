@@ -63,4 +63,10 @@ public interface BattleControllerFacade {
      */
     public String getUsername();
     
+    /**
+     * Tell server if the user is synced or not.
+     */
+    public void setIsSynced(boolean value);
+    
+    
 }

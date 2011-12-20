@@ -53,7 +53,8 @@ public class User implements SessionObject {
         READY,
         UNREADY,
         SPECTATING,
-        BUSY
+        BUSY,
+        OUT_OF_SYNC
     }
 /*
     public User(int status, String country, String name, int rank, int experience, int cpu) {
@@ -239,6 +240,10 @@ public class User implements SessionObject {
 
         // b22-23 is sync status
         isSynced = ((battleStatus >> 22) & 1) == 1;
+        
+        if(!isSynced) {
+            gameStatus = GameStatus.OUT_OF_SYNC;
+        }
 
         // b24-b27 is side
         faction = (battleStatus >> 24) & 0xF;
@@ -246,9 +251,9 @@ public class User implements SessionObject {
         // b28-31 is undefined/reserved for futureu se
     }
 
-    public boolean isPlayer() {
-        return gameStatus == GameStatus.UNREADY || gameStatus == GameStatus.READY;
-    }
+    //public boolean isPlayer() {
+    //    return gameStatus == GameStatus.UNREADY || gameStatus == GameStatus.READY;
+    //}
 
     public boolean isSpectator() {
         return gameStatus == GameStatus.SPECTATING;

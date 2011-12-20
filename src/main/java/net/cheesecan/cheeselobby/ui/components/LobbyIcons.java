@@ -63,6 +63,7 @@ public class LobbyIcons {
         statusIcons.put(GameStatus.READY.name().toLowerCase(), new ImageIcon(getClass().getResource("/img/status/ready.png")));
         statusIcons.put(GameStatus.UNREADY.name().toLowerCase(), new ImageIcon(getClass().getResource("/img/status/unready.png")));
         statusIcons.put(GameStatus.SPECTATING.name().toLowerCase(), new ImageIcon(getClass().getResource("/img/status/spectating.png")));
+        statusIcons.put(GameStatus.OUT_OF_SYNC.name().toLowerCase(), new ImageIcon(getClass().getResource("/img/status/oos.png")));
 
         // Initialize battle status icons
         battleStatusIcons = new HashMap<String, ImageIcon>();

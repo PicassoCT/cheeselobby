@@ -25,7 +25,7 @@ import net.cheesecan.cheeselobby.session.User.GameStatus;
  *
  * @author jahziah
  */
-public interface BattleRoomObserver extends BattleObserver {
+public interface BattleObserverDeprecated {
 
     /**
      * Called when the client has joined a battle that should be displayed.
@@ -38,12 +38,6 @@ public interface BattleRoomObserver extends BattleObserver {
      */
     public void closeBattle();
 
-    /**
-     * Tells client map has changed.
-     * @param battle 
-     */
-    public void mapChanged(Battle battle);
-    
      /**
      * Add user to a user table.
      * @param channel

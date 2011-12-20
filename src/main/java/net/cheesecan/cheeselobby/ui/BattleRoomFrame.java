@@ -26,15 +26,9 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.HeadlessException;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Locale;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -51,7 +45,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
@@ -135,6 +128,18 @@ public class BattleRoomFrame extends JInternalFrame implements BattleRoomObserve
         mapViewerComboBox.setSelectedItem("Off");   // triggers listener to disable viewer
     }
 
+    private void refreshMinimap(Battle battle) {
+        // Load minimap
+        boolean hasMap = ((MinimapDisplay) minimapLabel).setMinimap(battle.getMapHash());
+        
+        if(hasMap) {
+            battleController.setIsSynced(true);
+        } else {
+            battleController.setIsSynced(false);
+            getOurUser().setGameStatus(GameStatus.OUT_OF_SYNC);
+        }
+    }
+
     private void setLocation() {
         // Compute size and location of frame
         pack();
@@ -187,7 +192,7 @@ public class BattleRoomFrame extends JInternalFrame implements BattleRoomObserve
         initUserTable();
 
         // Load minimap
-        ((MinimapDisplay) minimapLabel).setMinimap(battle.getMapHash());
+        refreshMinimap(battle);
 
         // Make battle window visible
         reveal();
@@ -219,12 +224,12 @@ public class BattleRoomFrame extends JInternalFrame implements BattleRoomObserve
         // Resize table columns
         // TODO these are magic numbers
         userTable.getColumnModel().getColumn(0).setMaxWidth(42);
-        userTable.getColumnModel().getColumn(1).setMaxWidth(20);
+        userTable.getColumnModel().getColumn(1).setMaxWidth(32);
         userTable.getColumnModel().getColumn(2).setMaxWidth(50);
-        userTable.getColumnModel().getColumn(3).setMaxWidth(50);
+        userTable.getColumnModel().getColumn(3).setMaxWidth(32);
         userTable.getColumnModel().getColumn(4).setMaxWidth(25);
         userTable.getColumnModel().getColumn(5).setMaxWidth(23);
-        userTable.getColumnModel().getColumn(7).setMaxWidth(30);
+        userTable.getColumnModel().getColumn(7).setMaxWidth(36);
         userTable.getColumnModel().getColumn(8).setMaxWidth(30);
         userTable.getColumnModel().getColumn(9).setMaxWidth(30);
         userTable.setRowHeight(42);
@@ -646,17 +651,23 @@ public class BattleRoomFrame extends JInternalFrame implements BattleRoomObserve
     }// </editor-fold>//GEN-END:initComponents
 
     private void colorButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_colorButtonActionPerformed
-        // Show color chooser
-        Color retval = JColorChooser.showDialog(this, "Choose your player color", colorButton.getBackground());
+        final BattleRoomFrame thisRef = this;
+        SwingUtilities.invokeLater(new Runnable() {
 
-        // Set button color
-        colorButton.setBackground(retval);
+            public void run() {
+                // Show color chooser
+                Color retval = JColorChooser.showDialog(thisRef, "Choose your player color", colorButton.getBackground());
 
-        // Update our users color
-        getOurUser().setColor(retval);
+                // Set button color
+                colorButton.setBackground(retval);
 
-        // Notify battleController
-        battleController.sendMyBattleStatus(getOurUser().getBattleStatus(), getOurUser().getColor());
+                // Update our users color
+                getOurUser().setColor(retval);
+
+                // Notify battleController
+                battleController.sendMyBattleStatus(getOurUser().getBattleStatus(), getOurUser().getColor());
+            }
+        });
     }//GEN-LAST:event_colorButtonActionPerformed
 
     private void leaveButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_leaveButtonActionPerformed
@@ -921,11 +932,16 @@ public class BattleRoomFrame extends JInternalFrame implements BattleRoomObserve
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                ((MinimapDisplay) minimapLabel).setMinimap(battle.getMapHash());
+                refreshMinimap(battle);
                 //minimapLabel.validate();
                 //minimapLabel.repaint();
                 toFront();
             }
         });
+    }
+
+    public void mapChanged(Battle battle) {
+        disableMapViewer();
+        refreshMinimap(battle);
     }
 }
