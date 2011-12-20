@@ -1,7 +1,6 @@
 net.cheesecan.cheeselobby
 net.cheesecan.cheeselobby.io
 net.cheesecan.cheeselobby.io.downloader
-net.cheesecan.cheeselobby.io.torrent
 net.cheesecan.cheeselobby.lobby_connection.interfaces
 net.cheesecan.cheeselobby.mapviewer
 net.cheesecan.cheeselobby.session
