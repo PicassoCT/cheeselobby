@@ -46,7 +46,7 @@ public class ListenerThread extends Thread {
         this.sessionController = sessionController;
 
         try {
-            logWriter = new FileWriter("../server.log");
+            logWriter = new FileWriter("./../server.log");
         } catch (IOException ex) {
             Logger.getLogger(ListenerThread.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -74,7 +74,7 @@ public class ListenerThread extends Thread {
                 }
                 // Write msg to a file
                 logWriter.write(str + "\n");
-                //logWriter.flush();
+                logWriter.flush();
             }
         } catch (IOException ex) {
             if (threadState == ThreadState.Stopped) {

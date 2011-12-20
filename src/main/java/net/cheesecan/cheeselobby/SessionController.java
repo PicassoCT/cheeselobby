@@ -16,7 +16,6 @@
  */
 package net.cheesecan.cheeselobby;
 
-import java.io.InputStream;
 import net.cheesecan.cheeselobby.session.ClientInfo;
 import net.cheesecan.cheeselobby.session.Battle;
 import net.cheesecan.cheeselobby.lobby_connection.interfaces.BattleListObserver;
@@ -377,23 +376,31 @@ public class SessionController extends Thread implements BattleListControllerFac
                 currentBattle = 0;
                 break;
             case CLIENTSTATUS:
-                User user = usersOnServer.get(words[1]);
+                User client = usersOnServer.get(words[1]);
                 // Modify user's status
-                user.setStatus(Integer.valueOf(words[2]));
+                client.setStatus(Integer.valueOf(words[2]));
 
-                // If this is our own user and inGame bit was set to 1, then we need to launch Spring
-                if (words[1].equals(getUsername()) && usersOnServer.get(getUsername()).isInGame()) {
-                    launchSpring();
-                }
+                // If this is our own client and inGame bit was set to 1, then we need to launch Spring
+                //if (words[1].equals(getUsername()) && usersOnServer.get(getUsername()).isInGame()) {
+                //    launchSpring();
+               // }
 
-                // If this user is a game room host, his inGame status should affect the status of the room
-                if (user.isHostingABattle()) {
-                    if (user.isInGame()) {
+                // If this client is a game room host, their inGame status should affect the status of the room
+                if (client.isHostingABattle()) {
+                    if (client.isInGame()) {
                         // Set battle as started
-                        battlesOnServer.get(user.getHostingBattleId()).setStarted();
+                        battlesOnServer.get(client.getHostingBattleId()).setStarted();
+                        
+                        // If we are in the same game, launch spring
+                        int clientBattleId = client.getHostingBattleId();
+                        int userBattleId = usersOnServer.get(getUsername()).getBattleId();
+                        if(clientBattleId != 0 && clientBattleId == userBattleId ) {
+                            launchSpring();
+                        }
+                        
                     } else {
-                        // Set battle as started
-                        battlesOnServer.get(user.getHostingBattleId()).setEnded();
+                        // Set battle as ended
+                        battlesOnServer.get(client.getHostingBattleId()).setEnded();
                     }
                 }
                 break;
@@ -971,7 +978,7 @@ public class SessionController extends Thread implements BattleListControllerFac
 
             @Override
             public void run() {
-                int battleId = usersOnServer.get(username).getInBattle();
+                int battleId = usersOnServer.get(username).getBattleId();
                 if(battleId != -1) {
                     joinBattle(battleId, null);
                 }

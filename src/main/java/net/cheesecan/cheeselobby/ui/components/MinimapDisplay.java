@@ -100,7 +100,7 @@ public class MinimapDisplay extends JLabel implements MouseListener {
             // Put image into imageicon
             icon = new ImageIcon(minimap);
         } catch (IOException ex) {
-            Logger.getLogger(MinimapDisplay.class.getName()).log(Level.SEVERE, null, ex);
+            //Logger.getLogger(MinimapDisplay.class.getName()).log(Level.SEVERE, null, ex);
             icon = getMissingIcon();
         }
 

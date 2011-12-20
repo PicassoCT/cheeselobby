@@ -385,7 +385,11 @@ public class User implements SessionObject {
         return 1;
     }
 
-    public int getInBattle() {
+    /**
+     * 
+     * @return id of the battle the user is in.
+     */
+    public int getBattleId() {
         return inBattle;
     }
 
