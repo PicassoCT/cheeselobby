@@ -1,5 +1,5 @@
 /*
- *  Copyright 2011 jahziah.
+ *  Copyright 2011 Jahziah Wagner.
  * 
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,14 +15,6 @@
  *  under the License.
  */
 package net.cheesecan.cheeselobby.unitsync;
-
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.imageio.ImageIO;
 
 /**
  *
