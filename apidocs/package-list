@@ -1,0 +1,12 @@
+net.cheesecan.cheeselobby
+net.cheesecan.cheeselobby.io
+net.cheesecan.cheeselobby.io.downloader
+net.cheesecan.cheeselobby.io.torrent
+net.cheesecan.cheeselobby.lobby_connection.interfaces
+net.cheesecan.cheeselobby.mapviewer
+net.cheesecan.cheeselobby.session
+net.cheesecan.cheeselobby.tables
+net.cheesecan.cheeselobby.ui
+net.cheesecan.cheeselobby.ui.components
+net.cheesecan.cheeselobby.ui.interfaces
+net.cheesecan.cheeselobby.unitsync
