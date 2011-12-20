@@ -5,12 +5,26 @@
     <groupId>net.cheesecan</groupId>
     <artifactId>cheeselobby</artifactId>
     <version>0.2-SNAPSHOT</version>
+    <name>CheeseLobby</name>
     <properties>
         <main.class>net.cheesecan.cheeselobby.ui.NewMainFrame</main.class>
         <lwjgl.version>2.8.2</lwjgl.version>
         <lwjgl.natives>${project.build.directory}/lib/native</lwjgl.natives>
     </properties>
     <packaging>jar</packaging>
+    <description>Cross-platform multiplayer lobby client for Spring (www.springrts.com).</description>
+    <developers>
+        <developer>
+            <name>Jahziah Wagner</name>
+            <url>www.jahziah.com</url>
+        </developer>
+    </developers>
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+    </licenses>
     <build>
         <plugins>
             <plugin>
