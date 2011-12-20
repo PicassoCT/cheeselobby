@@ -57,9 +57,9 @@ public class NewMainFrame extends JFrame implements Disconnectable {
     public static LobbyIcons lobbyIcons = new LobbyIcons();
     // Members
     private JDesktopPane bg;
-    public final String lobbyName = "CheeseLobby";
-    public final float lobbyVersion = (float) 0.1;
-    private String title;
+    public static final String lobbyName = "CheeseLobby Alpha";
+    public static final float lobbyVersion = (float) 0.2;
+    public static String title;
     private JPopupMenu popupMenu;
     private JMenuItem settingsMenu;
     private JMenuItem downloadMenu;
@@ -78,6 +78,7 @@ public class NewMainFrame extends JFrame implements Disconnectable {
     private BattleRoomFrame battleRoom;
     private SettingsDialog settingsDialog;
     private DownloaderFrame downloader;
+    private AboutDialog about;
 
     public static void main(String[] args) {
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -128,17 +129,6 @@ public class NewMainFrame extends JFrame implements Disconnectable {
         // Are required settings missing?
         if (settings.getUnitSyncPath().isEmpty() || settings.getSpringExePath().isEmpty() || settings.getSpringDataDirectory().isEmpty()) {
             JOptionPane.showMessageDialog(this, "Welcome to CheeseLobby!\nThere are a few options that need to be set before you can begin playing.", lobbyName + " " + lobbyVersion, JOptionPane.INFORMATION_MESSAGE);
-
-            // Note if user tries to exit
-            /*
-            settingsDialog.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-            System.exit(0);
-            }
-            });
-             * 
-             */
 
             settingsDialog.showAtCenterOfScreen();
         }
@@ -233,7 +223,7 @@ public class NewMainFrame extends JFrame implements Disconnectable {
                 } else if (e.getSource() == helpMenu) {
                     helpMenuActionPerformed();
                 } else if (e.getSource() == aboutMenu) {
-                    JOptionPane.showMessageDialog(thisPtr, title + "\n" + "A Java multiplayer lobby client for Spring.\n" + "Developed by Jahziah Wagner 2011.");
+                    about.setVisible(true);
                 } else if (e.getSource() == exitMenu) {
                     exitMenuActionPerformed();
                 } else if (e.getSource() == logoutMenu) {
@@ -244,14 +234,14 @@ public class NewMainFrame extends JFrame implements Disconnectable {
             }
 
             private void logoutMenuActionPerformed() throws HeadlessException {
-                int res = JOptionPane.showConfirmDialog(null, "Are you sure you wish to disconnect?", "Disconnect", JOptionPane.YES_NO_OPTION);
+                int res = JOptionPane.showConfirmDialog(null, "Are you sure you want to disconnect?", "Confirm disconnect", JOptionPane.YES_NO_OPTION);
                 if (res == JOptionPane.YES_OPTION) {
                     _disconnect(null, null, null);
                 }
             }
 
             private void exitMenuActionPerformed() throws HeadlessException {
-                int retVal = JOptionPane.showConfirmDialog(thisPtr, "Are you sure you wish to exit?", "Confirm", JOptionPane.YES_NO_OPTION);
+                int retVal = JOptionPane.showConfirmDialog(thisPtr, "Are you sure you want to exit?", "Confirm exit", JOptionPane.YES_NO_OPTION);
                 if (retVal == JOptionPane.YES_OPTION) {
                     System.exit(0);
                 }
@@ -380,6 +370,8 @@ public class NewMainFrame extends JFrame implements Disconnectable {
         // Initialize battleRoom
         battleRoom = new BattleRoomFrame(sessionController, downloader, settings, unitSync);
         bg.add(battleRoom);
+        // Initialize about
+        about = new AboutDialog(this);
     }
 
     private void disposeOfWindow(JInternalFrame window) {

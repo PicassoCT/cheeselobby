@@ -16,6 +16,7 @@
  */
 package net.cheesecan.cheeselobby;
 
+import java.io.InputStream;
 import net.cheesecan.cheeselobby.session.ClientInfo;
 import net.cheesecan.cheeselobby.session.Battle;
 import net.cheesecan.cheeselobby.lobby_connection.interfaces.BattleListObserver;
@@ -28,6 +29,7 @@ import net.cheesecan.cheeselobby.ui.interfaces.BattleControllerFacade;
 import net.cheesecan.cheeselobby.ui.interfaces.LoginControllerFacade;
 import net.cheesecan.cheeselobby.ui.interfaces.ChatControllerFacade;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
@@ -902,6 +904,8 @@ public class SessionController extends Thread implements BattleListControllerFac
             String ip = b.getIp();
             int port = b.getPort();
             scriptFilePath = settings.getSpringDataDirectory() + "/script.txt";
+            scriptFilePath = new File(scriptFilePath).getAbsolutePath(); // fix path as / or \ is OS-dependant but Java will rectify it
+            System.out.println("Battle script is "+scriptFilePath +".");
             new ScriptFile(ip, port, false, username, battlePswd, scriptFilePath);
         } catch (IOException ex) {
             Logger.getLogger(SessionController.class.getName()).log(Level.SEVERE, null, ex);
@@ -909,9 +913,10 @@ public class SessionController extends Thread implements BattleListControllerFac
 
         // Launch game
         try {
-            String springExePath = settings.getSpringExePath() +" "+ scriptFilePath;
+            String springExePath = settings.getSpringExePath();
             System.out.println(springExePath);
-            Runtime.getRuntime().exec(springExePath);
+            Process exec = Runtime.getRuntime().exec( 
+                    new String[]{springExePath, scriptFilePath});
         } catch (IOException ex) {
             Logger.getLogger(SessionController.class.getName()).log(Level.SEVERE, null, ex);
         }

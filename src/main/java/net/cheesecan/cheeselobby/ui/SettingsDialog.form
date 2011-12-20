@@ -23,12 +23,16 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="1" attributes="0">
+          <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="lobbyOptionsPanel" alignment="0" max="32767" attributes="1"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="lobbyOptionsPanel" alignment="1" max="32767" attributes="1"/>
                   <Component id="springOptionsPanel" alignment="0" max="32767" attributes="0"/>
-                  <Component id="bottomPanel" alignment="0" max="32767" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="saveButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="324" max="32767" attributes="0"/>
+                      <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
+                  </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -36,12 +40,15 @@
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="1" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
               <Component id="lobbyOptionsPanel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="31" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="springOptionsPanel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="bottomPanel" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
+                  <Component id="saveButton" min="-2" max="-2" attributes="0"/>
+              </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
@@ -52,48 +59,52 @@
       <Properties>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-            <TitledBorder title="Spring options"/>
+            <TitledBorder title="Spring directory paths"/>
           </Border>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Spring path options"/>
+      </AccessibilityProperties>
 
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="unitSyncLabel" min="-2" max="-2" attributes="0"/>
-                      <Group type="102" alignment="1" attributes="0">
-                          <Component id="unitSyncPathField" pref="363" max="32767" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="browseUnitSyncButton" min="-2" max="-2" attributes="0"/>
-                      </Group>
                       <Component id="springExeLbl" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Group type="102" alignment="1" attributes="0">
-                          <Component id="springExeField" pref="363" max="32767" attributes="0"/>
+                          <Component id="springExeField" pref="415" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="browseSpringExeButton" min="-2" max="-2" attributes="0"/>
                       </Group>
+                      <Component id="unitSyncLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="unitSyncPathField" pref="415" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="browseUnitSyncButton" min="-2" max="-2" attributes="0"/>
+                      </Group>
                       <Component id="dataDirectoryLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Group type="102" alignment="0" attributes="0">
-                          <Component id="dataDirectoryField" pref="363" max="32767" attributes="0"/>
+                          <Component id="dataDirectoryField" pref="415" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="dataDirBrowse" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <Component id="jButton1" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
+              <Component id="jButton1" alignment="0" pref="498" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
-                  <Component id="unitSyncLabel" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="dataDirectoryLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="unitSyncPathField" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="browseUnitSyncButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="dataDirectoryField" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="dataDirBrowse" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="springExeLbl" min="-2" max="-2" attributes="0"/>
@@ -103,11 +114,11 @@
                       <Component id="browseSpringExeButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="dataDirectoryLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="unitSyncLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="dataDirectoryField" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="dataDirBrowse" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="unitSyncPathField" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="browseUnitSyncButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="32767" attributes="0"/>
                   <Component id="jButton1" min="-2" max="-2" attributes="0"/>
@@ -123,6 +134,9 @@
           </Properties>
         </Component>
         <Component class="javax.swing.JTextField" name="unitSyncPathField">
+          <Properties>
+            <Property name="toolTipText" type="java.lang.String" value="The path to unitsync. &#xa;In Windows this is found in the same directory as the Spring executable."/>
+          </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="unitSyncPathFieldActionPerformed"/>
           </Events>
@@ -142,8 +156,14 @@
           </Properties>
         </Component>
         <Component class="javax.swing.JTextField" name="springExeField">
+          <Properties>
+            <Property name="toolTipText" type="java.lang.String" value="The path to your spring or spring-multithreaded executable file."/>
+          </Properties>
         </Component>
         <Component class="javax.swing.JTextField" name="dataDirectoryField">
+          <Properties>
+            <Property name="toolTipText" type="java.lang.String" value="The path to the Spring engine root directory."/>
+          </Properties>
         </Component>
         <Component class="javax.swing.JLabel" name="dataDirectoryLabel">
           <Properties>
@@ -169,8 +189,8 @@
         </Component>
         <Component class="javax.swing.JButton" name="jButton1">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Auto-configure"/>
-            <Property name="toolTipText" type="java.lang.String" value="Tries to find all files for you. "/>
+            <Property name="text" type="java.lang.String" value="Auto-configure paths"/>
+            <Property name="toolTipText" type="java.lang.String" value="CheeseLobby can attempt to detect the locations for you."/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>
@@ -182,35 +202,32 @@
       <Properties>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-            <TitledBorder title="Lobby options"/>
+            <TitledBorder title="CheeseLobby options"/>
           </Border>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="CheeseLobby options"/>
+      </AccessibilityProperties>
 
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" attributes="0">
-                  <Component id="skinLabel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="394" max="32767" attributes="0"/>
-              </Group>
-              <Component id="skinComboBox" alignment="0" pref="447" max="32767" attributes="1"/>
-              <Group type="102" alignment="0" attributes="0">
-                  <Component id="loggingEnabled" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="319" max="32767" attributes="0"/>
-              </Group>
-              <Group type="102" alignment="0" attributes="0">
-                  <Component id="channelAutojoinLabel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-              </Group>
-              <Group type="102" alignment="0" attributes="0">
-                  <Component id="defaultChannelLabel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-              </Group>
               <Group type="102" alignment="1" attributes="0">
                   <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="defaultChannelField" alignment="0" pref="435" max="32767" attributes="0"/>
-                      <Component id="channelJoinScrollPane" alignment="1" pref="435" max="32767" attributes="1"/>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="skinLabel" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="skinComboBox" pref="403" max="32767" attributes="1"/>
+                      </Group>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="defaultChannelLabel" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="defaultChannelField" pref="394" max="32767" attributes="0"/>
+                      </Group>
+                      <Component id="loggingEnabled" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="channelAutojoinLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="channelJoinScrollPane" alignment="1" pref="488" max="32767" attributes="1"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -219,9 +236,10 @@
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
-                  <Component id="skinLabel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="skinComboBox" min="-2" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="skinLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="skinComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="loggingEnabled" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
@@ -229,10 +247,10 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="channelJoinScrollPane" min="-2" pref="156" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="defaultChannelLabel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="32767" attributes="0"/>
-                  <Component id="defaultChannelField" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="defaultChannelLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="defaultChannelField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
               </Group>
           </Group>
         </DimensionLayout>
@@ -240,7 +258,7 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="skinLabel">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Theme:"/>
+            <Property name="text" type="java.lang.String" value="Graphical theme:"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JComboBox" name="skinComboBox">
@@ -248,6 +266,7 @@
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
               <StringArray count="0"/>
             </Property>
+            <Property name="toolTipText" type="java.lang.String" value="The graphical theme to use in CheeseLobby."/>
           </Properties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new SubstanceSkinComboBox()"/>
@@ -255,12 +274,16 @@
         </Component>
         <Component class="javax.swing.JCheckBox" name="loggingEnabled">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Enable logging"/>
+            <Property name="text" type="java.lang.String" value="Enable log to filesystem (for debugging purposes)"/>
+            <Property name="toolTipText" type="java.lang.String" value="Leave this disabled if you don&apos;t know what it is."/>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="loggingEnabledActionPerformed"/>
+          </Events>
         </Component>
         <Component class="javax.swing.JLabel" name="channelAutojoinLabel">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Channel autojoin:"/>
+            <Property name="text" type="java.lang.String" value="Channels to join on login:"/>
           </Properties>
         </Component>
         <Container class="javax.swing.JScrollPane" name="channelJoinScrollPane">
@@ -279,61 +302,41 @@
                 <Property name="columns" type="int" value="20"/>
                 <Property name="rows" type="int" value="5"/>
                 <Property name="text" type="java.lang.String" value="main&#xa;cheeselobby"/>
+                <Property name="toolTipText" type="java.lang.String" value="Type in channels you wish to autojoin. It is not necessary to write # before channel names."/>
               </Properties>
             </Component>
           </SubComponents>
         </Container>
         <Component class="javax.swing.JLabel" name="defaultChannelLabel">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Default channel:"/>
+            <Property name="text" type="java.lang.String" value="Default channel: #"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JTextField" name="defaultChannelField">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="cheeselobby"/>
+            <Property name="toolTipText" type="java.lang.String" value="The default channel to show when you login."/>
+          </Properties>
         </Component>
       </SubComponents>
     </Container>
-    <Container class="javax.swing.JPanel" name="bottomPanel">
-
-      <Layout>
-        <DimensionLayout dim="0">
-          <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="0" attributes="0">
-                  <Component id="saveButton" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="355" max="32767" attributes="0"/>
-                  <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
-              </Group>
-          </Group>
-        </DimensionLayout>
-        <DimensionLayout dim="1">
-          <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" attributes="0">
-                  <EmptySpace max="32767" attributes="0"/>
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="saveButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="cancelButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  </Group>
-              </Group>
-          </Group>
-        </DimensionLayout>
-      </Layout>
-      <SubComponents>
-        <Component class="javax.swing.JButton" name="saveButton">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Save"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="saveButtonActionPerformed"/>
-          </Events>
-        </Component>
-        <Component class="javax.swing.JButton" name="cancelButton">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Cancel"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cancelButtonActionPerformed"/>
-          </Events>
-        </Component>
-      </SubComponents>
-    </Container>
+    <Component class="javax.swing.JButton" name="cancelButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Cancel"/>
+        <Property name="toolTipText" type="java.lang.String" value="Cancel changes and keep existing configuration."/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cancelButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="saveButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Save and continue"/>
+        <Property name="toolTipText" type="java.lang.String" value="Save these options to the cheeselobby.properties file."/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="saveButtonActionPerformed"/>
+      </Events>
+    </Component>
   </SubComponents>
 </Form>

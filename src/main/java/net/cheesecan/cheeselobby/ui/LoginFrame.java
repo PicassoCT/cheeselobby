@@ -157,20 +157,23 @@ public class LoginFrame extends JInternalFrame implements ActionListener, LoginO
         usernameLbl.setText("Username:");
 
         loginBtn.setText("Login");
+        loginBtn.setToolTipText("Login to the Spring lobby server.");
         loginBtn.addActionListener(this);
 
         rememberPasswordCheckbox.setText("Remember password");
+        rememberPasswordCheckbox.setToolTipText("Store username and password.");
 
         loginAutomaticallyCheckbox.setText("Login automatically next time");
         loginAutomaticallyCheckbox.addActionListener(this);
 
         jButton1.setText("Register");
-        jButton1.setToolTipText("Register a new account using the username and password you enter.");
+        jButton1.setToolTipText("Register a new account using the username and password you have entered above.");
         jButton1.addActionListener(this);
 
-        jLabel1.setFont(new Font("Ubuntu", 1, 14)); // NOI18N
+        jLabel1.setFont(new Font("Ubuntu", 1, 14));
         jLabel1.setForeground(new Color(0, 5, 255));
         jLabel1.setText("Forgot your password?");
+        jLabel1.setToolTipText("Unimplemented feature.");
         jLabel1.setEnabled(false);
 
         GroupLayout loginPanelLayout = new GroupLayout(loginPanel);
@@ -186,21 +189,16 @@ public class LoginFrame extends JInternalFrame implements ActionListener, LoginO
                             .addComponent(passwordLbl))
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addGroup(loginPanelLayout.createParallelGroup(Alignment.LEADING)
-                            .addGroup(Alignment.TRAILING, loginPanelLayout.createSequentialGroup()
-                                .addPreferredGap(ComponentPlacement.RELATED)
-                                .addComponent(passwordField, GroupLayout.PREFERRED_SIZE, 349, GroupLayout.PREFERRED_SIZE))
-                            .addComponent(userNameBox, GroupLayout.PREFERRED_SIZE, 349, GroupLayout.PREFERRED_SIZE))
-                        .addGap(4, 4, 4))
-                    .addGroup(loginPanelLayout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addPreferredGap(ComponentPlacement.RELATED, 279, GroupLayout.PREFERRED_SIZE))
+                            .addComponent(passwordField, GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
+                            .addComponent(userNameBox, 0, 376, Short.MAX_VALUE)))
+                    .addComponent(jLabel1)
                     .addGroup(loginPanelLayout.createParallelGroup(Alignment.TRAILING, false)
                         .addComponent(progressBar, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jButton1, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(loginBtn, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(loginAutomaticallyCheckbox, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
                         .addComponent(rememberPasswordCheckbox, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)))
-                .addContainerGap())
+                .addGap(10, 10, 10))
         );
         loginPanelLayout.setVerticalGroup(
             loginPanelLayout.createParallelGroup(Alignment.LEADING)

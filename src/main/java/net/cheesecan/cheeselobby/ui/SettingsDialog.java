@@ -5,18 +5,23 @@
  */
 package net.cheesecan.cheeselobby.ui;
 
+import java.awt.event.WindowEvent;
+import javax.swing.DefaultComboBoxModel;
 import net.cheesecan.cheeselobby.ui.components.SubstanceSkinComboBox;
 import java.awt.Color;
+import java.awt.Dialog;
 import java.awt.HeadlessException;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,9 +52,10 @@ import org.pushingpixels.substance.api.skin.SkinInfo;
  */
 public class SettingsDialog extends JDialog implements ActionListener {
     // Appearance
-    int width;
-    int height;
-    Color defaultFieldColor;
+
+    private int width;
+    private int height;
+    private Color defaultFieldColor;
     private SettingsFile settings;
     private boolean restartRequired;
 
@@ -76,6 +82,14 @@ public class SettingsDialog extends JDialog implements ActionListener {
         // Same for themes
         skinComboBox.addActionListener(changeThatRequiresRestart);
 
+        addWindowListener(new WindowAdapter() {
+
+            @Override
+            public void windowClosing(WindowEvent e) {
+                cancelButtonActionPerformed(null);
+            }
+        });
+
         // Set window location
         setAppearance();
     }
@@ -100,43 +114,51 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private void autoconfigureWindows() {
         // Get the disk, C, D, etc
         char disk = System.getProperty("user.home").charAt(0);
-         // Get username
+
+        // Get username
         String username = System.getProperty("user.name");
-        File springDataDir = 
-                new File(disk + ":/Users/"+username+"/Documents/My Games/Spring/");
-        if(springDataDir.listFiles() == null) { // if failed
-            JOptionPane.showMessageDialog(this, "Could not autoconfigure.");
-            System.out.println(springDataDir.getAbsolutePath());
-            return;
-        }
-        // If it exists
-        if (springDataDir.exists() && springDataDir.isDirectory()) {
-            dataDirectoryField.setText(springDataDir.getAbsolutePath());
-        }
-        // Check for exe at another location
-        springDataDir = new File(disk + ":/Program files/Spring/");
-        if(springDataDir.listFiles() == null) { // check other dir
-            springDataDir = new File(disk + ":/Program files (x86)/Spring/");
-        } if(springDataDir.listFiles() == null) { // if failed
-            JOptionPane.showMessageDialog(this, "Could not autoconfigure.");
-            System.out.println(springDataDir.getAbsolutePath());
-            return;
-        }
+
+        // Store the location of spring
+        File springDataDir = null;
         File springExe = null;
         File unitSync = null;
-        for (File f : springDataDir.listFiles()) {
-            if (f.getName().equals("spring.exe") || f.getName().equals("spring-multithreaded.exe")) {
-                springExe = f;
-            } else if (f.getName().equals("unitsync.dll")) {
-                unitSync = f;
+
+        // Find the spring root directory in My Documents
+        springDataDir = new File(disk + ":/Users/" + username + "/Documents/My Games/Spring/");
+        if (springDataDir.exists()) { // success
+            dataDirectoryField.setText(springDataDir.getAbsolutePath()); // Remember path to spring directory
+            // Exe and unitSync should be in /engine/<latest_spring_version>
+            File[] engines = new File(springDataDir.getAbsolutePath() + "/engine/").listFiles(new java.io.FileFilter() {
+
+                public boolean accept(File file) {
+                    return file.isDirectory();
+                }
+            });
+            Arrays.sort(engines); // File implements equals & compareTo so we can sort them, last element contains the most recent version
+
+            // Set exe and unitsync path
+            springExe = new File(engines[engines.length - 1] + "/spring.exe");
+            unitSync = new File(engines[engines.length - 1] + "/unitsync.dll");
+            System.out.println(springExe.getAbsolutePath());
+        } else { // If not found in My Documents, try Program Files (x86)
+            springDataDir = new File(disk + ":/Program files (x86)/Spring/");
+            if (springDataDir.exists()) { // success
+                dataDirectoryField.setText(springDataDir.getAbsolutePath()); // Remember path to spring directory
             }
+            // Exe and unitsync should be in the same directory
+            springExe = new File(disk + ":/Program files (x86)/Spring/spring.exe");
+            unitSync = new File(disk + ":/Program files (x86)/Spring/unitsync.dll");
         }
-        // If we found the spring exe
-        if (springExe != null) {
-            springExeField.setText(springExe.getAbsolutePath());
+
+        if (springExe.exists()) { // success
+            springExeField.setText(springExe.getAbsolutePath()); // Remember path to exe
         }
-        if (unitSync != null) {
-            unitSyncPathField.setText(unitSync.getAbsolutePath());
+        if (unitSync.exists()) { // success
+            unitSyncPathField.setText(unitSync.getAbsolutePath()); // Remember path to unitsync
+        }
+
+        if (!springDataDir.exists()) { // failure
+            JOptionPane.showMessageDialog(this, "CheeseLobby was unable to locate Spring.");
         }
     }
 
@@ -175,7 +197,6 @@ public class SettingsDialog extends JDialog implements ActionListener {
         if (restartRequired) {
             JOptionPane.showConfirmDialog(this, "You will have to restart the application for all changes to take full effect.", "Restart may be required", JOptionPane.OK_OPTION);
         }
-        closeSettingsDialog();
     }
 
     private void closeSettingsDialog() {
@@ -273,6 +294,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
 
         setTitle("Settings");
         setResizable(true);
+        setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
         defaultFieldColor = springExeField.getBackground();
     }
@@ -280,6 +302,11 @@ public class SettingsDialog extends JDialog implements ActionListener {
     public void showAtCenterOfScreen() {
         // Show at the center of the screen
         setLocation(new Point((int) NewMainFrame.getScreenSize().getWidth() / 2 - getWidth() / 2, (int) Toolkit.getDefaultToolkit().getScreenSize().getHeight() / 2 - getHeight() / 2));
+
+        if (settings.getSpringDataDirectory().isEmpty()) { // if not setup yet
+            firstTime();
+        }
+
         setVisible(true);
     }
 
@@ -313,15 +340,15 @@ public class SettingsDialog extends JDialog implements ActionListener {
         autoJoinTextField = new JTextArea();
         defaultChannelLabel = new JLabel();
         defaultChannelField = new JTextField();
-        bottomPanel = new JPanel();
-        saveButton = new JButton();
         cancelButton = new JButton();
+        saveButton = new JButton();
 
-        springOptionsPanel.setBorder(BorderFactory.createTitledBorder("Spring options"));
+        springOptionsPanel.setBorder(BorderFactory.createTitledBorder("Spring directory paths"));
 
         unitSyncLabel.setText("Unitsync path:");
         unitSyncLabel.setToolTipText("The directory that contains Unitsync. \nIf you don't know what this is, set it to the same as the spring data directory.");
 
+        unitSyncPathField.setToolTipText("The path to unitsync. \nIn Windows this is found in the same directory as the Spring executable.");
         unitSyncPathField.addActionListener(this);
 
         browseUnitSyncButton.setText("Browse");
@@ -329,6 +356,10 @@ public class SettingsDialog extends JDialog implements ActionListener {
 
         springExeLbl.setText("Spring executable path:");
         springExeLbl.setToolTipText("The directory that contains the spring executable(spring.exe).");
+
+        springExeField.setToolTipText("The path to your spring or spring-multithreaded executable file.");
+
+        dataDirectoryField.setToolTipText("The path to the Spring engine root directory.");
 
         dataDirectoryLabel.setText("Spring data directory:");
         dataDirectoryLabel.setToolTipText("The directory that contains maps, mods, script.txt etc.");
@@ -339,8 +370,8 @@ public class SettingsDialog extends JDialog implements ActionListener {
         dataDirBrowse.setText("Browse");
         dataDirBrowse.addActionListener(this);
 
-        jButton1.setText("Auto-configure");
-        jButton1.setToolTipText("Tries to find all files for you. ");
+        jButton1.setText("Auto-configure paths");
+        jButton1.setToolTipText("CheeseLobby can attempt to detect the locations for you.");
         jButton1.addActionListener(this);
 
         GroupLayout springOptionsPanelLayout = new GroupLayout(springOptionsPanel);
@@ -349,32 +380,33 @@ public class SettingsDialog extends JDialog implements ActionListener {
             springOptionsPanelLayout.createParallelGroup(Alignment.LEADING)
             .addGroup(springOptionsPanelLayout.createSequentialGroup()
                 .addGroup(springOptionsPanelLayout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(unitSyncLabel)
-                    .addGroup(Alignment.TRAILING, springOptionsPanelLayout.createSequentialGroup()
-                        .addComponent(unitSyncPathField, GroupLayout.DEFAULT_SIZE, 363, Short.MAX_VALUE)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(browseUnitSyncButton))
                     .addComponent(springExeLbl)
                     .addGroup(Alignment.TRAILING, springOptionsPanelLayout.createSequentialGroup()
-                        .addComponent(springExeField, GroupLayout.DEFAULT_SIZE, 363, Short.MAX_VALUE)
+                        .addComponent(springExeField, GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(browseSpringExeButton))
+                    .addComponent(unitSyncLabel)
+                    .addGroup(springOptionsPanelLayout.createSequentialGroup()
+                        .addComponent(unitSyncPathField, GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(browseUnitSyncButton))
                     .addComponent(dataDirectoryLabel)
                     .addGroup(springOptionsPanelLayout.createSequentialGroup()
-                        .addComponent(dataDirectoryField, GroupLayout.DEFAULT_SIZE, 363, Short.MAX_VALUE)
+                        .addComponent(dataDirectoryField, GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(dataDirBrowse))
-                    .addComponent(jButton1))
+                        .addComponent(dataDirBrowse)))
                 .addContainerGap())
+            .addComponent(jButton1, GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE)
         );
         springOptionsPanelLayout.setVerticalGroup(
             springOptionsPanelLayout.createParallelGroup(Alignment.LEADING)
             .addGroup(springOptionsPanelLayout.createSequentialGroup()
-                .addComponent(unitSyncLabel)
+                .addContainerGap()
+                .addComponent(dataDirectoryLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(springOptionsPanelLayout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(unitSyncPathField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(browseUnitSyncButton))
+                    .addComponent(dataDirectoryField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(dataDirBrowse))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(springExeLbl)
                 .addPreferredGap(ComponentPlacement.RELATED)
@@ -382,22 +414,26 @@ public class SettingsDialog extends JDialog implements ActionListener {
                     .addComponent(springExeField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(browseSpringExeButton))
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(dataDirectoryLabel)
+                .addComponent(unitSyncLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(springOptionsPanelLayout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(dataDirectoryField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(dataDirBrowse))
+                    .addComponent(unitSyncPathField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(browseUnitSyncButton))
                 .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jButton1))
         );
 
-        lobbyOptionsPanel.setBorder(BorderFactory.createTitledBorder("Lobby options"));
+        lobbyOptionsPanel.setBorder(BorderFactory.createTitledBorder("CheeseLobby options"));
 
-        skinLabel.setText("Theme:");
+        skinLabel.setText("Graphical theme:");
 
-        loggingEnabled.setText("Enable logging");
+        skinComboBox.setToolTipText("The graphical theme to use in CheeseLobby.");
 
-        channelAutojoinLabel.setText("Channel autojoin:");
+        loggingEnabled.setText("Enable log to filesystem (for debugging purposes)");
+        loggingEnabled.setToolTipText("Leave this disabled if you don't know what it is.");
+        loggingEnabled.addActionListener(this);
+
+        channelAutojoinLabel.setText("Channels to join on login:");
 
         channelJoinScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         channelJoinScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -405,39 +441,39 @@ public class SettingsDialog extends JDialog implements ActionListener {
         autoJoinTextField.setColumns(20);
         autoJoinTextField.setRows(5);
         autoJoinTextField.setText("main\ncheeselobby");
+        autoJoinTextField.setToolTipText("Type in channels you wish to autojoin. It is not necessary to write # before channel names.");
         channelJoinScrollPane.setViewportView(autoJoinTextField);
 
-        defaultChannelLabel.setText("Default channel:");
+        defaultChannelLabel.setText("Default channel: #");
+
+        defaultChannelField.setText("cheeselobby");
+        defaultChannelField.setToolTipText("The default channel to show when you login.");
 
         GroupLayout lobbyOptionsPanelLayout = new GroupLayout(lobbyOptionsPanel);
         lobbyOptionsPanel.setLayout(lobbyOptionsPanelLayout);
         lobbyOptionsPanelLayout.setHorizontalGroup(
             lobbyOptionsPanelLayout.createParallelGroup(Alignment.LEADING)
-            .addGroup(lobbyOptionsPanelLayout.createSequentialGroup()
-                .addComponent(skinLabel)
-                .addContainerGap(394, Short.MAX_VALUE))
-            .addComponent(skinComboBox, 0, 447, Short.MAX_VALUE)
-            .addGroup(lobbyOptionsPanelLayout.createSequentialGroup()
-                .addComponent(loggingEnabled)
-                .addContainerGap(319, Short.MAX_VALUE))
-            .addGroup(lobbyOptionsPanelLayout.createSequentialGroup()
-                .addComponent(channelAutojoinLabel)
-                .addContainerGap())
-            .addGroup(lobbyOptionsPanelLayout.createSequentialGroup()
-                .addComponent(defaultChannelLabel)
-                .addContainerGap())
             .addGroup(Alignment.TRAILING, lobbyOptionsPanelLayout.createSequentialGroup()
                 .addGroup(lobbyOptionsPanelLayout.createParallelGroup(Alignment.TRAILING)
-                    .addComponent(defaultChannelField, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 435, Short.MAX_VALUE)
-                    .addComponent(channelJoinScrollPane, GroupLayout.DEFAULT_SIZE, 435, Short.MAX_VALUE))
+                    .addGroup(Alignment.LEADING, lobbyOptionsPanelLayout.createSequentialGroup()
+                        .addComponent(skinLabel)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(skinComboBox, 0, 403, Short.MAX_VALUE))
+                    .addGroup(Alignment.LEADING, lobbyOptionsPanelLayout.createSequentialGroup()
+                        .addComponent(defaultChannelLabel)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(defaultChannelField, GroupLayout.DEFAULT_SIZE, 394, Short.MAX_VALUE))
+                    .addComponent(loggingEnabled, Alignment.LEADING)
+                    .addComponent(channelAutojoinLabel, Alignment.LEADING)
+                    .addComponent(channelJoinScrollPane, GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE))
                 .addContainerGap())
         );
         lobbyOptionsPanelLayout.setVerticalGroup(
             lobbyOptionsPanelLayout.createParallelGroup(Alignment.LEADING)
             .addGroup(lobbyOptionsPanelLayout.createSequentialGroup()
-                .addComponent(skinLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(skinComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addGroup(lobbyOptionsPanelLayout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(skinLabel)
+                    .addComponent(skinComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(loggingEnabled)
                 .addPreferredGap(ComponentPlacement.RELATED)
@@ -445,58 +481,49 @@ public class SettingsDialog extends JDialog implements ActionListener {
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(channelJoinScrollPane, GroupLayout.PREFERRED_SIZE, 156, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(defaultChannelLabel)
-                .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(defaultChannelField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addGroup(lobbyOptionsPanelLayout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(defaultChannelLabel)
+                    .addComponent(defaultChannelField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
         );
-
-        saveButton.setText("Save");
-        saveButton.addActionListener(this);
 
         cancelButton.setText("Cancel");
+        cancelButton.setToolTipText("Cancel changes and keep existing configuration.");
         cancelButton.addActionListener(this);
 
-        GroupLayout bottomPanelLayout = new GroupLayout(bottomPanel);
-        bottomPanel.setLayout(bottomPanelLayout);
-        bottomPanelLayout.setHorizontalGroup(
-            bottomPanelLayout.createParallelGroup(Alignment.LEADING)
-            .addGroup(bottomPanelLayout.createSequentialGroup()
-                .addComponent(saveButton)
-                .addPreferredGap(ComponentPlacement.RELATED, 355, Short.MAX_VALUE)
-                .addComponent(cancelButton))
-        );
-        bottomPanelLayout.setVerticalGroup(
-            bottomPanelLayout.createParallelGroup(Alignment.LEADING)
-            .addGroup(bottomPanelLayout.createSequentialGroup()
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(bottomPanelLayout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(saveButton)
-                    .addComponent(cancelButton)))
-        );
+        saveButton.setText("Save and continue");
+        saveButton.setToolTipText("Save these options to the cheeselobby.properties file.");
+        saveButton.addActionListener(this);
 
         GroupLayout layout = new GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
-                    .addComponent(lobbyOptionsPanel, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(springOptionsPanel, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(bottomPanel, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(lobbyOptionsPanel, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(springOptionsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(saveButton)
+                        .addPreferredGap(ComponentPlacement.RELATED, 324, Short.MAX_VALUE)
+                        .addComponent(cancelButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addComponent(lobbyOptionsPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addGap(31, 31, 31)
+                .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(springOptionsPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(bottomPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                    .addComponent(cancelButton)
+                    .addComponent(saveButton))
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        springOptionsPanel.getAccessibleContext().setAccessibleName("Spring path options");
+        lobbyOptionsPanel.getAccessibleContext().setAccessibleName("CheeseLobby options");
 
         pack();
     }
@@ -525,6 +552,9 @@ public class SettingsDialog extends JDialog implements ActionListener {
         else if (evt.getSource() == cancelButton) {
             SettingsDialog.this.cancelButtonActionPerformed(evt);
         }
+        else if (evt.getSource() == loggingEnabled) {
+            SettingsDialog.this.loggingEnabledActionPerformed(evt);
+        }
     }// </editor-fold>//GEN-END:initComponents
 
     private void getValues() {
@@ -533,7 +563,23 @@ public class SettingsDialog extends JDialog implements ActionListener {
         springExeField.setText(settings.getSpringExePath());
         dataDirectoryField.setText(settings.getSpringDataDirectory());
         skinComboBox.setSelectedItem("org.pushingpixels.substance.api.skin." + settings.getTheme());
-        defaultChannelField.setText(settings.getDefaultChannel());
+
+        if (settings.getDefaultChannel() != null) {
+            defaultChannelField.setText(settings.getDefaultChannel()); // default value
+        }
+    }
+
+    /**
+     * Executed if user has not run CheeseLobby before / not generated properties-file.
+     */
+    public void firstTime() {
+        jButton1ActionPerformed(null);
+
+        // If all paths were set
+        if (!springExeField.getText().isEmpty() && !unitSyncPathField.getText().isEmpty() && !dataDirectoryField.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "CheeseLobby has successfully configured itself.", "Success",
+                    JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
     private File findFile(String soughtFile, File startLocation) {
@@ -567,6 +613,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private void saveButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
         if (mandatoryDataHasBeenProvided()) {
             saveSettings();
+            closeSettingsDialog();
         }
     }//GEN-LAST:event_saveButtonActionPerformed
 
@@ -577,8 +624,8 @@ public class SettingsDialog extends JDialog implements ActionListener {
                 && !settings.getSpringExePath().isEmpty()) {
             closeSettingsDialog();
         } else {
-            int result = JOptionPane.showOptionDialog(this, "To use CheeseLobby you must complete the highlighted fields.", "",
-                    JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new String[]{"Ok", "Exit the program"}, "Ok");
+            int result = JOptionPane.showOptionDialog(this, "To use CheeseLobby you must provide Spring directory paths.", "Notice",
+                    JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new String[]{"Cancel", "Exit program"}, "Cancel");
             // User wants to exit
             if (result == 1) {
                 System.exit(0);
@@ -699,9 +746,12 @@ public class SettingsDialog extends JDialog implements ActionListener {
             autoconfigureWindows();
         }
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void loggingEnabledActionPerformed(ActionEvent evt) {//GEN-FIRST:event_loggingEnabledActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_loggingEnabledActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JTextArea autoJoinTextField;
-    private JPanel bottomPanel;
     private JButton browseSpringExeButton;
     private JButton browseUnitSyncButton;
     private JButton cancelButton;

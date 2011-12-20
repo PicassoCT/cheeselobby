@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import org.ini4j.Wini;
 
 /**
@@ -39,7 +40,9 @@ public class ScriptFile {
         boolean ok = file.createNewFile();
 
         if(!ok) {
-            throw new IOException("Couldn't create script.txt file.");
+            JOptionPane.showMessageDialog(null, "Couldn't create script.txt, "
+                    + "is your spring data path set correctly?\n"
+                    + "Do you have write access to the location?");
         }
 
         // Initialize
